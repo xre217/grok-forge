@@ -102,12 +102,12 @@ export async function generateWithFallback({
   if (hasKey) {
     try {
       return await generateWithXai({ system, prompt });
-    } catch {
+    } catch (xaiError) {
       if (await isOllamaAvailable()) {
         const result = await generateWithOllama({ system, prompt });
         return { ...result, fallback: true };
       }
-      throw new Error("xAI failed and Ollama is unavailable.");
+      throw new Error(formatReasoningError(xaiError));
     }
   }
 
