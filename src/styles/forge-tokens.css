@@ -1,0 +1,15 @@
+/* Grok Forge — Tre signature design tokens */
+:root {
+  --forge-void: #030308;
+  --forge-surface: rgba(12, 12, 18, 0.72);
+  --forge-glass: rgba(255, 255, 255, 0.04);
+  --forge-glass-border: rgba(255, 255, 255, 0.08);
+  --forge-gold: #d4af37;
+  --forge-gold-dim: #b8860b;
+  --forge-gold-glow: rgba(212, 175, 55, 0.35);
+  --forge-arc: radial-gradient(
+    ellipse 80% 60% at 50% 0%,
+    rgba(212, 175, 55, 0.12) 0%,
+    transparent 70%
+  );
+}
