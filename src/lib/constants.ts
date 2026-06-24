@@ -10,6 +10,8 @@ export const ROUTES = {
   studio: "/studio",
 } as const;
 
+export const FORGE_DOMAIN = "forge.trefong.com";
+
 export const FORGE_FEATURES = [
   {
     icon: "sparkles" as const,
