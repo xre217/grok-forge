@@ -131,6 +131,14 @@
 }
 
 @layer utilities {
+  .magnetic-nav-rail-shell {
+    transform-style: preserve-3d;
+  }
+
+  .magnetic-nav-rail {
+    transform-style: preserve-3d;
+  }
+
   .forge-glass {
     background: var(--forge-surface);
     border: 1px solid var(--forge-glass-border);
