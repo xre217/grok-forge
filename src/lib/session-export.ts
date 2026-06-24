@@ -1,4 +1,5 @@
 import { FORGE } from "@/lib/constants";
+import type { ThrmlSignal } from "@/lib/thrml";
 import type {
   Locale,
   SessionChatMessage,
@@ -13,6 +14,7 @@ type ExportInput = {
   activePanel: StudioPanel;
   activeSkill: string | null;
   ledgerLimit?: number;
+  thrml?: ThrmlSignal | null;
 };
 
 function readStoredMessages(): SessionChatMessage[] {
@@ -38,6 +40,7 @@ function buildSummary(bundle: Omit<SessionExportBundle, "summary">): string {
     `Active skill: ${bundle.session.activeSkill ?? "none"}`,
     `Ledger entries in slice: ${bundle.ledger.slice.length}`,
     `Ledger total: ${(bundle.ledger.stats as { total?: number }).total ?? "?"}`,
+    `THRML mode: ${(bundle.thrml as { mode?: string } | null)?.mode ?? "n/a"}`,
     ``,
     `## Chat`,
     ...bundle.session.messages.map(
@@ -94,6 +97,7 @@ export async function buildSessionExport(
       messages,
     },
     runtime,
+    thrml: input.thrml ?? null,
     ledger: {
       path: ledgerData.path,
       stats: ledgerData.stats,

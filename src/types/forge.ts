@@ -28,6 +28,7 @@ export type SessionExportBundle = {
     messages: SessionChatMessage[];
   };
   runtime: Record<string, unknown>;
+  thrml: Record<string, unknown> | null;
   ledger: {
     path: string;
     stats: Record<string, unknown>;

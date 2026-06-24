@@ -5,8 +5,10 @@ import { CommandPalette } from "@/components/forge/command-palette";
 import { ExportToast } from "@/components/forge/export-toast";
 import { GoldParticleCanvas } from "@/components/forge/gold-particle-canvas";
 import { SkillsRail } from "@/components/forge/skills-rail";
+import { ThrmlSignalBar } from "@/components/forge/thrml-signal-bar";
 import { Button } from "@/components/ui/button";
 import { useSessionExport } from "@/hooks/use-session-export";
+import { useThrmlSignal } from "@/hooks/use-thrml-signal";
 import { FORGE, ROUTES, STUDIO_SKILLS } from "@/lib/constants";
 import type { Locale, StudioPanel } from "@/types/forge";
 import confetti from "canvas-confetti";
@@ -20,10 +22,14 @@ export function ForgeStudio() {
   const [activeSkill, setActiveSkill] = useState<string | null>(null);
   const [toastFile, setToastFile] = useState<string | null>(null);
 
+  const { signal: thrmlSignal, loading: thrmlLoading, refresh: refreshThrml } =
+    useThrmlSignal();
+
   const { exportSession, isExporting } = useSessionExport({
     locale,
     activePanel,
     activeSkill,
+    thrml: thrmlSignal,
   });
 
   const skillPrompt = useMemo(() => {
@@ -32,9 +38,16 @@ export function ForgeStudio() {
     return skill?.prompt;
   }, [activeSkill]);
 
+  useEffect(() => {
+    if (skillPrompt) {
+      void refreshThrml(skillPrompt);
+    }
+  }, [skillPrompt, refreshThrml]);
+
   const newChat = () => {
     setActiveSkill(null);
     setActivePanel("chat");
+    void refreshThrml("Local Forge — new conversation");
   };
 
   const handleExport = useCallback(async () => {
@@ -49,6 +62,13 @@ export function ForgeStudio() {
       });
     }
   }, [exportSession]);
+
+  const handleChatSend = useCallback(
+    (message: string) => {
+      void refreshThrml(message);
+    },
+    [refreshThrml],
+  );
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -121,20 +141,28 @@ export function ForgeStudio() {
         </div>
       </header>
 
-      <div className="relative z-10 flex flex-1 gap-4 overflow-hidden p-4">
-        <SkillsRail
-          activePanel={activePanel}
-          onPanelChange={setActivePanel}
-          activeSkill={activeSkill}
-          onSkillSelect={setActiveSkill}
+      <div className="relative z-10 flex flex-1 flex-col overflow-hidden p-4 pt-0">
+        <ThrmlSignalBar
+          signal={thrmlSignal}
+          loading={thrmlLoading}
           locale={locale}
         />
-        <ChatPanel
-          locale={locale}
-          activePanel={activePanel}
-          activeSkill={activeSkill}
-          skillPrompt={skillPrompt}
-        />
+        <div className="flex min-h-0 flex-1 gap-4">
+          <SkillsRail
+            activePanel={activePanel}
+            onPanelChange={setActivePanel}
+            activeSkill={activeSkill}
+            onSkillSelect={setActiveSkill}
+            locale={locale}
+          />
+          <ChatPanel
+            locale={locale}
+            activePanel={activePanel}
+            activeSkill={activeSkill}
+            skillPrompt={skillPrompt}
+            onSend={handleChatSend}
+          />
+        </div>
       </div>
 
       <CommandPalette

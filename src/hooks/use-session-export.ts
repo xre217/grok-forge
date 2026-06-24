@@ -4,6 +4,7 @@ import {
   buildSessionExport,
   downloadSessionExport,
 } from "@/lib/session-export";
+import type { ThrmlSignal } from "@/lib/thrml";
 import type { Locale, StudioPanel } from "@/types/forge";
 import { useCallback, useState } from "react";
 
@@ -11,12 +12,14 @@ type UseSessionExportArgs = {
   locale: Locale;
   activePanel: StudioPanel;
   activeSkill: string | null;
+  thrml?: ThrmlSignal | null;
 };
 
 export function useSessionExport({
   locale,
   activePanel,
   activeSkill,
+  thrml,
 }: UseSessionExportArgs) {
   const [isExporting, setIsExporting] = useState(false);
   const [lastExport, setLastExport] = useState<string | null>(null);
@@ -29,6 +32,7 @@ export function useSessionExport({
         activePanel,
         activeSkill,
         ledgerLimit: 24,
+        thrml,
       });
       const filename = downloadSessionExport(bundle);
       setLastExport(filename);
@@ -36,7 +40,7 @@ export function useSessionExport({
     } finally {
       setIsExporting(false);
     }
-  }, [locale, activePanel, activeSkill]);
+  }, [locale, activePanel, activeSkill, thrml]);
 
   return { exportSession, isExporting, lastExport };
 }
