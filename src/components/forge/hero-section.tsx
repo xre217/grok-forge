@@ -26,7 +26,10 @@ export function HeroSection() {
         <h1 className="mb-4 bg-gradient-to-b from-[var(--forge-gold)] to-[var(--forge-gold-dim)] bg-clip-text text-5xl font-bold tracking-tight text-transparent sm:text-6xl">
           {FORGE.name}
         </h1>
-        <p className="mb-8 text-lg text-white/60">{FORGE.tagline}</p>
+        <p className="mb-2 text-lg text-white/60">{FORGE.tagline}</p>
+        <p className="mb-8 text-sm text-emerald-400/80">
+          Local Forge — Ollama + Ledger. No xAI credits. No Vercel.
+        </p>
         <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
           <MagneticButton asChild strength={0.38}>
             <Link

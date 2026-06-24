@@ -36,6 +36,12 @@ export const FORGE_FEATURES = [
     title: "Bilingual Toggle",
     description: "English ↔ 中文. Mobile-first, glassmorphism, zero compromise.",
   },
+  {
+    icon: "zap" as const,
+    title: "Local-First",
+    description:
+      "Ollama on your machine. VILO ledger as constitution. Build without cloud bills.",
+  },
 ] as const;
 
 export const STUDIO_SKILLS = [

@@ -44,6 +44,9 @@ export function ForgeStudio() {
             {FORGE.name}
           </Link>
           <span className="hidden text-xs text-white/30 sm:inline">/ studio</span>
+          <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
+            LOCAL
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <Button

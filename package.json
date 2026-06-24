@@ -5,8 +5,10 @@
   "description": "Grok Forge — the Arc Reactor of Grok Studio. Flagship product of PROJECT: VILO v1.1.",
   "scripts": {
     "dev": "next dev",
+    "dev:local": "FORGE_MODE=local FORGE_LOCAL_FIRST=1 next dev",
     "build": "next build",
     "start": "next start",
+    "forge:local": "bash scripts/run-local.sh",
     "lint": "eslint"
   },
   "dependencies": {

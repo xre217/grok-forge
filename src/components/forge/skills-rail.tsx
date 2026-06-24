@@ -40,7 +40,7 @@ export function SkillsRail({
     chat: locale === "zh" ? "对话" : "Chat",
     skills: locale === "zh" ? "技能" : "Skills",
     ledger: locale === "zh" ? "账本" : "Ledger",
-    deploy: locale === "zh" ? "部署" : "Deploy",
+    deploy: locale === "zh" ? "本地" : "Local",
   };
 
   return (

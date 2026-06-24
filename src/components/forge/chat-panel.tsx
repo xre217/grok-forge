@@ -1,9 +1,11 @@
 "use client";
 
+import { LedgerPanel } from "@/components/forge/ledger-panel";
+import { LocalHostPanel } from "@/components/forge/local-host-panel";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
-import { FORGE_DOMAIN } from "@/lib/constants";
+import { useForgeChat } from "@/hooks/use-forge-chat";
 import type { Locale, StudioPanel } from "@/types/forge";
 import { cn } from "@/lib/utils";
 import { Loader2, Send, Sparkles } from "lucide-react";
@@ -21,34 +23,39 @@ type ChatPanelProps = {
   activeSkill: string | null;
   skillPrompt?: string;
   onSend?: (message: string) => void;
+  onResetChat?: () => void;
 };
 
 type ForgeStatus = {
-  grok: { configured: boolean; model: string };
+  mode: string;
+  localFirst: boolean;
+  reasoner: { provider: string; model: string };
   ollama: { available: boolean };
-  domain: string;
+  ledger: { path: string; total: number };
+  hosting: { command: string; port: number };
+  grok: { configured: boolean; active: boolean };
 };
 
 const COPY = {
   en: {
-    placeholder: "Ask Grok anything…",
+    placeholder: "Build with the Local Forge…",
     greeting:
-      "Forge online. I'm your JARVIS-class co-pilot — maximum truth, zero corporate filter. What shall we build?",
-    ledger: "Evidence Ledger view — connect your ~/.jarvis constitution here.",
-    deploy: "Production deploy target. Wire DNS once Vercel billing is active.",
+      "Local Forge online — Ollama on your machine, ledger as constitution. No cloud credits needed. What are we building?",
     skills: "Skills library active. Pick a skill to inject its system prompt.",
-    thinking: "Grok is thinking…",
-    error: "Connection failed. Check XAI_API_KEY or Ollama.",
+    thinking: "Reasoning locally…",
+    error: "Local reasoner failed. Is Ollama running?",
+    chat: "Local Chat",
+    live: "LOCAL",
   },
   zh: {
-    placeholder: "问 Grok 任何问题…",
+    placeholder: "与本地熔炉一起构建…",
     greeting:
-      "Forge 已上线。我是你的 JARVIS 级副驾驶——最大真实，零企业滤镜。我们要建造什么？",
-    ledger: "证据账本视图——在此连接你的 ~/.jarvis 宪法。",
-    deploy: "生产部署目标。Vercel 账单恢复后配置 DNS。",
+      "本地熔炉已上线——Ollama 在本地运行，账本即宪法。无需云积分。我们要建造什么？",
     skills: "技能库已激活。选择技能以注入系统提示。",
-    thinking: "Grok 思考中…",
-    error: "连接失败。请检查 XAI_API_KEY 或 Ollama。",
+    thinking: "本地推理中…",
+    error: "本地推理失败。Ollama 是否在运行？",
+    chat: "本地对话",
+    live: "本地",
   },
 } as const;
 
@@ -58,14 +65,13 @@ export function ChatPanel({
   activeSkill,
   skillPrompt,
   onSend,
+  onResetChat,
 }: ChatPanelProps) {
   const t = COPY[locale];
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<ForgeStatus | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: "welcome", role: "assistant", content: t.greeting },
-  ]);
+  const { messages, setMessages } = useForgeChat(locale, t.greeting);
   const bottomRef = useRef<HTMLDivElement>(null);
   const lastSkillRef = useRef<string | null>(null);
 
@@ -91,7 +97,7 @@ export function ChatPanel({
         content: `${locale === "zh" ? "技能已加载" : "Skill loaded"}: ${skillPrompt}`,
       },
     ]);
-  }, [skillPrompt, activeSkill, locale]);
+  }, [skillPrompt, activeSkill, locale, setMessages]);
 
   const send = async () => {
     const text = input.trim();
@@ -113,7 +119,9 @@ export function ChatPanel({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: history.map(({ role, content }) => ({ role, content })),
+          messages: history
+            .filter((m) => m.id !== "welcome")
+            .map(({ role, content }) => ({ role, content })),
           locale,
           skillPrompt: activeSkill ? skillPrompt : undefined,
         }),
@@ -126,11 +134,7 @@ export function ChatPanel({
         model?: string;
       };
 
-      const reply =
-        data.message ??
-        data.error ??
-        (locale === "zh" ? t.error : t.error);
-
+      const reply = data.message ?? data.error ?? t.error;
       const meta =
         data.provider && data.model
           ? `\n\n— ${data.provider}/${data.model}`
@@ -155,49 +159,11 @@ export function ChatPanel({
   };
 
   if (activePanel === "ledger") {
-    return (
-      <PanelShell title={locale === "zh" ? "证据账本" : "Evidence Ledger"}>
-        <p className="text-white/50">{t.ledger}</p>
-        <pre className="mt-4 rounded-xl border border-white/5 bg-black/40 p-4 font-mono text-xs text-[var(--forge-gold-dim)]">
-          ~/.jarvis/memory/ledger.jsonl
-        </pre>
-      </PanelShell>
-    );
+    return <LedgerPanel locale={locale} />;
   }
 
   if (activePanel === "deploy") {
-    return (
-      <PanelShell title={locale === "zh" ? "部署" : "Deploy"}>
-        <p className="text-white/50">{t.deploy}</p>
-        <div className="mt-4 space-y-3 font-mono text-xs">
-          <StatusRow
-            label="Grok API"
-            value={
-              status?.grok.configured
-                ? `key set · ${status.grok.model} (needs credits)`
-                : "✗ XAI_API_KEY missing"
-            }
-          />
-          <StatusRow
-            label="Ollama"
-            value={status?.ollama.available ? "✓ online" : "○ offline"}
-          />
-          <StatusRow label="GitHub" value="✓ xre217/grok-forge" />
-          <StatusRow
-            label="Domain"
-            value={status?.domain ?? FORGE_DOMAIN}
-          />
-          <StatusRow label="Vercel" value="⏳ billing — update payment method" />
-        </div>
-        <pre className="mt-4 rounded-xl border border-white/5 bg-black/40 p-4 text-[10px] text-white/40">
-{`# DNS at registrar (trefong.com)
-CNAME  forge  →  cname.vercel-dns.com
-
-# After billing cleared
-./scripts/deploy-forge.sh`}
-        </pre>
-      </PanelShell>
-    );
+    return <LocalHostPanel locale={locale} status={status} />;
   }
 
   if (activePanel === "skills" && !activeSkill) {
@@ -208,25 +174,37 @@ CNAME  forge  →  cname.vercel-dns.com
     );
   }
 
+  const isLive =
+    status?.localFirst && status?.ollama?.available;
+
   return (
     <div className="forge-glass flex h-full min-h-0 flex-1 flex-col rounded-2xl">
       <div className="flex items-center justify-between border-b border-white/5 px-4 py-3">
         <div className="flex items-center gap-2">
           <Sparkles className="size-4 text-[var(--forge-gold)]" />
-          <span className="text-sm font-medium text-white">
-            {locale === "zh" ? "Grok 对话" : "Grok Chat"}
-          </span>
-          {status?.grok.configured && (
+          <span className="text-sm font-medium text-white">{t.chat}</span>
+          {isLive && (
             <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] text-emerald-400">
-              LIVE
+              {t.live}
             </span>
           )}
         </div>
-        {activeSkill && (
-          <span className="text-xs text-[var(--forge-gold-dim)]">
-            {activeSkill}
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {activeSkill && (
+            <span className="text-xs text-[var(--forge-gold-dim)]">
+              {activeSkill}
+            </span>
+          )}
+          {onResetChat && (
+            <button
+              type="button"
+              onClick={onResetChat}
+              className="text-[10px] text-white/30 hover:text-white/60"
+            >
+              {locale === "zh" ? "清除" : "clear"}
+            </button>
+          )}
+        </div>
       </div>
 
       <ScrollArea className="flex-1 px-4 py-4">
@@ -302,15 +280,6 @@ function PanelShell({
         {title}
       </h2>
       {children}
-    </div>
-  );
-}
-
-function StatusRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex justify-between gap-4 text-white/50">
-      <span>{label}</span>
-      <span className="text-[var(--forge-gold-dim)]">{value}</span>
     </div>
   );
 }
