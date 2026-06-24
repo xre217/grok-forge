@@ -2,19 +2,29 @@
 
 import { ChatPanel } from "@/components/forge/chat-panel";
 import { CommandPalette } from "@/components/forge/command-palette";
+import { ExportToast } from "@/components/forge/export-toast";
 import { GoldParticleCanvas } from "@/components/forge/gold-particle-canvas";
 import { SkillsRail } from "@/components/forge/skills-rail";
 import { Button } from "@/components/ui/button";
+import { useSessionExport } from "@/hooks/use-session-export";
 import { FORGE, ROUTES, STUDIO_SKILLS } from "@/lib/constants";
 import type { Locale, StudioPanel } from "@/types/forge";
-import { Languages, Plus } from "lucide-react";
+import confetti from "canvas-confetti";
+import { Download, Languages, Loader2, Plus } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export function ForgeStudio() {
   const [locale, setLocale] = useState<Locale>("en");
   const [activePanel, setActivePanel] = useState<StudioPanel>("chat");
   const [activeSkill, setActiveSkill] = useState<string | null>(null);
+  const [toastFile, setToastFile] = useState<string | null>(null);
+
+  const { exportSession, isExporting } = useSessionExport({
+    locale,
+    activePanel,
+    activeSkill,
+  });
 
   const skillPrompt = useMemo(() => {
     if (!activeSkill) return undefined;
@@ -26,6 +36,30 @@ export function ForgeStudio() {
     setActiveSkill(null);
     setActivePanel("chat");
   };
+
+  const handleExport = useCallback(async () => {
+    const filename = await exportSession();
+    if (filename) {
+      setToastFile(filename);
+      confetti({
+        particleCount: 40,
+        spread: 50,
+        origin: { x: 0.92, y: 0.92 },
+        colors: ["#d4af37", "#b8860b", "#fff4b8"],
+      });
+    }
+  }, [exportSession]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "e") {
+        e.preventDefault();
+        void handleExport();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [handleExport]);
 
   return (
     <div className="relative flex min-h-screen flex-col bg-[var(--forge-void)]">
@@ -57,6 +91,20 @@ export function ForgeStudio() {
           >
             <Languages className="size-4" />
             {locale === "en" ? "中文" : "EN"}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={isExporting}
+            className="border-white/10 bg-white/5 text-white/70"
+            onClick={() => void handleExport()}
+          >
+            {isExporting ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Download className="size-4" />
+            )}
+            {locale === "zh" ? "导出" : "Export"}
           </Button>
           <Button
             variant="outline"
@@ -95,6 +143,14 @@ export function ForgeStudio() {
         onToggleLocale={() =>
           setLocale((l) => (l === "en" ? "zh" : "en"))
         }
+        onExport={() => void handleExport()}
+        locale={locale}
+      />
+
+      <ExportToast
+        filename={toastFile}
+        locale={locale}
+        onDismiss={() => setToastFile(null)}
       />
     </div>
   );

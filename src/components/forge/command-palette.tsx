@@ -14,12 +14,14 @@ import { ROUTES } from "@/lib/constants";
 import type { StudioPanel } from "@/types/forge";
 import {
   BookOpen,
+  Download,
   Languages,
   MessageSquare,
   Rocket,
   Sparkles,
   Terminal,
 } from "lucide-react";
+import type { Locale } from "@/types/forge";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import confetti from "canvas-confetti";
@@ -28,12 +30,16 @@ type CommandPaletteProps = {
   onPanelChange?: (panel: StudioPanel) => void;
   onNewChat?: () => void;
   onToggleLocale?: () => void;
+  onExport?: () => void;
+  locale?: Locale;
 };
 
 export function CommandPalette({
   onPanelChange,
   onNewChat,
   onToggleLocale,
+  onExport,
+  locale = "en",
 }: CommandPaletteProps) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
@@ -84,6 +90,11 @@ export function CommandPalette({
           >
             <BookOpen />
             View ledger
+          </CommandItem>
+          <CommandItem onSelect={() => run(() => onExport?.())}>
+            <Download />
+            {locale === "zh" ? "导出会话" : "Export session"}
+            <CommandShortcut>⌘⇧E</CommandShortcut>
           </CommandItem>
         </CommandGroup>
         <CommandSeparator />

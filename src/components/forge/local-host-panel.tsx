@@ -18,12 +18,16 @@ const COPY = {
     subtitle: "Zero cloud credits. Zero Vercel. Runs on your machine.",
     run: "Production-like local server",
     stack: "Your stack",
+    export: "Session export",
+    exportHint: "Chat + 24 ledger entries + runtime → JSON. ⌘⇧E",
   },
   zh: {
     title: "本地熔炉",
     subtitle: "零云积分。零 Vercel。在你的机器上运行。",
     run: "本地生产级服务器",
     stack: "你的技术栈",
+    export: "会话导出",
+    exportHint: "对话 + 24 条账本 + 运行时 → JSON。⌘⇧E",
   },
 } as const;
 
@@ -86,11 +90,16 @@ npm run forge:local
       <p className="mb-2 text-xs font-medium uppercase tracking-widest text-white/30">
         {t.stack}
       </p>
-      <pre className="rounded-xl border border-white/5 bg-black/50 p-4 font-mono text-[10px] leading-relaxed text-white/40">
+      <pre className="mb-4 rounded-xl border border-white/5 bg-black/50 p-4 font-mono text-[10px] leading-relaxed text-white/40">
 {`FORGE_MODE=local
 OLLAMA_MODEL=llama3.2:3b
 JARVIS_HOME=~/.jarvis`}
       </pre>
+
+      <p className="mb-2 text-xs font-medium uppercase tracking-widest text-white/30">
+        {t.export}
+      </p>
+      <p className="text-xs text-white/45">{t.exportHint}</p>
 
       <Button
         className="mt-6 rounded-full bg-[var(--forge-gold)] text-black hover:bg-[var(--forge-gold-dim)]"

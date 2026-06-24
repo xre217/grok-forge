@@ -4,7 +4,9 @@ import type { ChatMessage } from "@/components/forge/chat-panel";
 import type { Locale } from "@/types/forge";
 import { useCallback, useEffect, useState } from "react";
 
-const STORAGE_KEY = "grok-forge:chat";
+import { CHAT_STORAGE_KEY } from "@/lib/session-export";
+
+const STORAGE_KEY = CHAT_STORAGE_KEY;
 
 type StoredChat = {
   messages: ChatMessage[];
