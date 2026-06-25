@@ -30,9 +30,25 @@ export type TeamBundleMissionSlice = {
   entries: TeamBundleEntry[];
 };
 
+export type CrewActivityKind =
+  | "pin"
+  | "explore"
+  | "bundle-export"
+  | "bundle-import"
+  | "session-export"
+  | "session-import";
+
+export type CrewActivity = {
+  id: string;
+  ts: string;
+  kind: CrewActivityKind;
+  summary: string;
+  detail?: string;
+};
+
 export type TeamBundle = {
   format: "grok-forge-team-bundle";
-  version: "1.0";
+  version: "1.0" | "1.1";
   exportedAt: string;
   forge: {
     name: string;
@@ -51,13 +67,17 @@ export type TeamBundle = {
     explorations: number;
     pinned: number;
     total: number;
+    crewLog?: number;
+  };
+  crewLog?: {
+    entries: CrewActivity[];
   };
   summary: string;
 };
 
 export type SessionExportBundle = {
   format: "grok-forge-session";
-  version: "1.0" | "1.1";
+  version: "1.0" | "1.1" | "1.2";
   exportedAt: string;
   project: string;
   forge: {
@@ -80,5 +100,6 @@ export type SessionExportBundle = {
     slice: Array<Record<string, unknown>>;
   };
   consciousnessStream?: Array<Record<string, unknown>>;
+  crewActivity?: CrewActivity[];
   summary: string;
 };

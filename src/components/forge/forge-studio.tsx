@@ -169,7 +169,10 @@ export function ForgeStudio() {
         );
         setToast({
           title: locale === "zh" ? "会话已导入" : "Session imported",
-          detail: `${result.messageCount} messages`,
+          detail:
+            result.crewActivityMerged > 0
+              ? `${result.messageCount} messages · ${result.crewActivityMerged} log events`
+              : `${result.messageCount} messages`,
         });
       } catch {
         setToast({
@@ -381,7 +384,10 @@ export function ForgeStudio() {
               setActivePanel("explore");
               setToast({
                 title: locale === "zh" ? "团队包已导入" : "Team bundle imported",
-                detail: `${result.imported} imported, ${result.skipped} skipped`,
+                detail:
+                  result.crewActivityMerged && result.crewActivityMerged > 0
+                    ? `${result.imported} imported · ${result.crewActivityMerged} log events`
+                    : `${result.imported} imported, ${result.skipped} skipped`,
               });
             })
             .catch((err) =>

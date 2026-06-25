@@ -1,3 +1,4 @@
+import { mergeCrewActivities } from "@/lib/crew-activity";
 import { CHAT_STORAGE_KEY } from "@/lib/session-export";
 import type {
   Locale,
@@ -12,6 +13,7 @@ export type SessionImportResult = {
   activeSkill: string | null;
   messageCount: number;
   exportedAt: string;
+  crewActivityMerged: number;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -30,7 +32,9 @@ function isChatMessage(value: unknown): value is SessionChatMessage {
 export function validateSessionBundle(data: unknown): SessionExportBundle | null {
   if (!isRecord(data)) return null;
   if (data.format !== "grok-forge-session") return null;
-  if (data.version !== "1.0" && data.version !== "1.1") return null;
+  if (data.version !== "1.0" && data.version !== "1.1" && data.version !== "1.2") {
+    return null;
+  }
   if (typeof data.exportedAt !== "string") return null;
   if (!isRecord(data.session)) return null;
 
@@ -70,12 +74,15 @@ export function applySessionImport(
     localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(payload));
   }
 
+  const crewActivityMerged = mergeCrewActivities(bundle.crewActivity ?? []);
+
   return {
     locale: bundle.session.locale,
     activePanel: bundle.session.activePanel,
     activeSkill: bundle.session.activeSkill ?? null,
     messageCount: bundle.session.messages.length,
     exportedAt: bundle.exportedAt,
+    crewActivityMerged,
   };
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { logCrewActivity } from "@/lib/crew-activity";
+import { logCrewActivity, mergeCrewActivities } from "@/lib/crew-activity";
 import { emitLedgerUpdated } from "@/lib/forge-events";
 import {
   buildBundleImportPreview,
@@ -19,6 +19,7 @@ export type TeamBundleImportResult = {
   missions: number;
   team: string;
   exportedAt: string;
+  crewActivityMerged?: number;
 };
 
 export type StagedTeamBundleImport = {
@@ -82,12 +83,15 @@ export function useTeamBundle(locale: Locale) {
       }
 
       emitLedgerUpdated();
+      const crewMerged = mergeCrewActivities(
+        bundle.crewLog?.entries ?? [],
+      );
       logCrewActivity(
         "bundle-import",
         `${data.imported} imported, ${data.skipped} skipped`,
-        data.team,
+        crewMerged > 0 ? `${data.team} · ${crewMerged} log events` : data.team,
       );
-      return data;
+      return { ...data, crewActivityMerged: crewMerged };
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Team bundle import failed";

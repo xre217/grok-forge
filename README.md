@@ -83,7 +83,7 @@ npm run verify
 | **Team bundles** | Export/import exploration + memory JSON for your crew |
 | **Import preview** | Review missions + new/duplicate entries before merging |
 | **Bundle diff** | Side-by-side ledger vs incoming bundle before merge |
-| **Crew log** | localStorage timeline of pins, explores, imports, exports |
+| **Crew log** | localStorage timeline — exported in session + team bundles |
 | **Memory strip** | Live preview of active team memory above chat |
 | **First-run checklist** | Three-step onboarding to activate the memory loop |
 | **Memory citations** | Shows which ledger entries shaped each reply (chips + hover) |
@@ -238,6 +238,12 @@ FORGE_MODE=local npm run start
 Vercel deploy is optional — Forge is designed to run on your machine.
 
 ## Changelog
+
+### v0.14.0 — Crew log export
+- **Session export v1.2** — includes `crewActivity` slice (last 32 events)
+- **Team bundle v1.1** — optional `crewLog` on export; merged on import (deduped by id)
+- **Import preview** — shows crew log event count when bundle carries activity
+- Session import restores crew log into localStorage alongside chat
 
 ### v0.13.0 — THRML engine clarity
 - **Engine badge** — `THRML Ising` vs `Hash fallback` on signal bar + setup hint panel

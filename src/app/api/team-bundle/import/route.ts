@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     const bundle = validateTeamBundle(body.bundle);
     if (!bundle) {
       return NextResponse.json(
-        { error: "Invalid team bundle. Expected grok-forge-team-bundle v1.0." },
+        { error: "Invalid team bundle. Expected grok-forge-team-bundle v1.0/v1.1." },
         { status: 400 },
       );
     }

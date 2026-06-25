@@ -1,7 +1,9 @@
+import { getCrewActivitiesForExport } from "@/lib/crew-activity";
 import { FORGE } from "@/lib/constants";
 import { EXPLORATION_MISSIONS, getMission } from "@/lib/explorations";
 import type { LedgerEntry } from "@/lib/ledger";
 import type {
+  CrewActivity,
   Locale,
   TeamBundle,
   TeamBundleEntry,
@@ -79,6 +81,7 @@ function buildBundleSummary(bundle: Omit<TeamBundle, "summary">): string {
     `Team: ${bundle.team.label}`,
     `Entries: ${bundle.stats.total} (${bundle.stats.explorations} explorations, ${bundle.stats.pinned} pinned)`,
     `Missions: ${bundle.missions.length}`,
+    `Crew log: ${bundle.crewLog?.entries.length ?? 0} events`,
     ``,
     `## Missions`,
     ...bundle.missions.map(
@@ -120,9 +123,11 @@ export async function buildTeamBundle(
   const explorations = memory.filter((e) => e.type === "exploration").length;
   const pinned = memory.filter((e) => e.tags?.includes("pinned")).length;
 
+  const crewEntries = getCrewActivitiesForExport(24);
+
   const base = {
     format: "grok-forge-team-bundle" as const,
-    version: "1.0" as const,
+    version: "1.1" as const,
     exportedAt: new Date().toISOString(),
     forge: {
       name: FORGE.name,
@@ -139,7 +144,9 @@ export async function buildTeamBundle(
       explorations,
       pinned,
       total: memory.length,
+      crewLog: crewEntries.length,
     },
+    crewLog: crewEntries.length ? { entries: crewEntries } : undefined,
   };
 
   return { ...base, summary: buildBundleSummary(base) };
@@ -174,13 +181,27 @@ function isTeamBundleEntryShape(value: unknown): value is TeamBundleEntry {
   );
 }
 
+function isCrewActivityShape(value: unknown): value is CrewActivity {
+  if (!isRecord(value)) return false;
+  return (
+    typeof value.id === "string" &&
+    typeof value.ts === "string" &&
+    typeof value.kind === "string" &&
+    typeof value.summary === "string"
+  );
+}
+
 export function validateTeamBundle(data: unknown): TeamBundle | null {
   if (!isRecord(data)) return null;
   if (data.format !== "grok-forge-team-bundle") return null;
-  if (data.version !== "1.0") return null;
+  if (data.version !== "1.0" && data.version !== "1.1") return null;
   if (typeof data.exportedAt !== "string") return null;
   if (!isRecord(data.memory) || !Array.isArray(data.memory.entries)) return null;
   if (!data.memory.entries.every(isTeamBundleEntryShape)) return null;
+  if (isRecord(data.crewLog)) {
+    if (!Array.isArray(data.crewLog.entries)) return null;
+    if (!data.crewLog.entries.every(isCrewActivityShape)) return null;
+  }
   return data as TeamBundle;
 }
 
@@ -196,7 +217,7 @@ export async function readTeamBundleFile(file: File): Promise<TeamBundle> {
   const bundle = validateTeamBundle(parsed);
   if (!bundle) {
     throw new Error(
-      "Unrecognized team bundle. Expected grok-forge-team-bundle v1.0.",
+      "Unrecognized team bundle. Expected grok-forge-team-bundle v1.0/v1.1.",
     );
   }
   return bundle;
@@ -238,6 +259,7 @@ export type BundleImportPreview = {
   forgeVersion: string;
   missions: BundleImportPreviewMission[];
   diff: BundleImportDiff;
+  crewLogCount: number;
   stats: {
     total: number;
     new: number;
@@ -246,6 +268,7 @@ export type BundleImportPreview = {
     changed: number;
     explorations: number;
     pinned: number;
+    crewLog: number;
   };
 };
 
@@ -336,12 +359,15 @@ export function buildBundleImportPreview(
   const invalidCount = diff.invalid.length;
   const changedCount = diff.duplicates.filter((r) => r.claimChanged).length;
 
+  const crewLogCount = bundle.crewLog?.entries.length ?? 0;
+
   return {
     team: bundle.team.label,
     exportedAt: bundle.exportedAt,
     forgeVersion: bundle.forge.version,
     missions,
     diff,
+    crewLogCount,
     stats: {
       total: bundle.stats.total,
       new: newCount,
@@ -350,6 +376,7 @@ export function buildBundleImportPreview(
       changed: changedCount,
       explorations: bundle.stats.explorations,
       pinned: bundle.stats.pinned,
+      crewLog: crewLogCount,
     },
   };
 }

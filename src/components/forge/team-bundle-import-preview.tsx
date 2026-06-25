@@ -33,6 +33,7 @@ const COPY = {
     changed: "claim changed",
     explorations: "explorations",
     pinned: "pinned",
+    crewLog: "crew log events",
     cancel: "Cancel",
     merge: (n: number) => (n === 1 ? "Merge 1 entry" : `Merge ${n} entries`),
     nothingNew: "Nothing new to merge",
@@ -66,6 +67,7 @@ const COPY = {
     changed: "主张不同",
     explorations: "探索",
     pinned: "固定",
+    crewLog: "团队日志",
     cancel: "取消",
     merge: (n: number) => `合并 ${n} 条`,
     nothingNew: "没有新条目可合并",
@@ -193,6 +195,11 @@ export function TeamBundleImportPreviewDialog({
             {preview.stats.invalid > 0 && (
               <StatPill tone="rose">
                 {preview.stats.invalid} {t.invalid}
+              </StatPill>
+            )}
+            {preview.stats.crewLog > 0 && (
+              <StatPill tone="violet">
+                {preview.stats.crewLog} {t.crewLog}
               </StatPill>
             )}
           </div>

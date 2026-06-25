@@ -1,3 +1,4 @@
+import { getCrewActivitiesForExport } from "@/lib/crew-activity";
 import { FORGE } from "@/lib/constants";
 import type { ThrmlSignal } from "@/lib/thrml-types";
 import type {
@@ -42,6 +43,7 @@ function buildSummary(bundle: Omit<SessionExportBundle, "summary">): string {
     `Ledger total: ${(bundle.ledger.stats as { total?: number }).total ?? "?"}`,
     `THRML mode: ${(bundle.thrml as { mode?: string } | null)?.mode ?? "n/a"}`,
     `Consciousness stream: ${bundle.consciousnessStream?.length ?? 0} entries`,
+    `Crew log: ${bundle.crewActivity?.length ?? 0} events`,
     ``,
     `## Chat`,
     ...bundle.session.messages.map(
@@ -100,7 +102,7 @@ export async function buildSessionExport(
 
   const base = {
     format: "grok-forge-session" as const,
-    version: "1.1" as const,
+    version: "1.2" as const,
     exportedAt: new Date().toISOString(),
     project: FORGE.project,
     forge: {
@@ -123,6 +125,7 @@ export async function buildSessionExport(
       slice: ledgerData.entries,
     },
     consciousnessStream,
+    crewActivity: getCrewActivitiesForExport(),
   };
 
   return { ...base, summary: buildSummary(base) };
