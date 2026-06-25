@@ -19,6 +19,7 @@ type ThrmlSignalBarProps = {
   error?: string | null;
   onRetry?: () => void;
   locale: Locale;
+  collapsed?: boolean;
 };
 
 const SCORE_META = {
@@ -78,12 +79,23 @@ export function ThrmlSignalBar({
   error,
   onRetry,
   locale,
+  collapsed = false,
 }: ThrmlSignalBarProps) {
   const t = COPY[locale];
 
   return (
-    <div className="forge-glass mb-4 rounded-2xl px-4 py-3">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+    <div
+      className={cn(
+        "forge-glass mb-4 rounded-2xl px-4 py-3",
+        collapsed && "py-2",
+      )}
+    >
+      <div
+        className={cn(
+          "flex flex-wrap items-center justify-between gap-2",
+          !collapsed && "mb-3",
+        )}
+      >
         <div className="flex items-center gap-2">
           <Activity className="size-4 text-[var(--forge-gold)]" />
           <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[var(--forge-gold-dim)]">
@@ -125,7 +137,7 @@ export function ThrmlSignalBar({
         )}
       </div>
 
-      {signal && !signal.using_thrml && (
+      {!collapsed && signal && !signal.using_thrml && (
         <div
           className={cn(
             "mb-3 flex items-start gap-2 rounded-xl border border-amber-400/15 bg-amber-500/[0.07] px-3 py-2",
@@ -151,7 +163,7 @@ export function ThrmlSignalBar({
         </div>
       )}
 
-      {error && (
+      {!collapsed && error && (
         <div
           role="alert"
           aria-live="polite"
@@ -175,7 +187,7 @@ export function ThrmlSignalBar({
         </div>
       )}
 
-      {signal ? (
+      {!collapsed && signal ? (
         <>
           <div
             className={cn(
@@ -221,9 +233,9 @@ export function ThrmlSignalBar({
             {signal.recommendation}
           </p>
         </>
-      ) : error ? null : (
+      ) : !collapsed && !error ? (
         <p className="text-xs text-white/35">{t.empty}</p>
-      )}
+      ) : null}
     </div>
   );
 }

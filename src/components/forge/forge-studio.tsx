@@ -3,6 +3,7 @@
 import { ChatPanel } from "@/components/forge/chat-panel";
 import { CommandPalette } from "@/components/forge/command-palette";
 import { ExportToast } from "@/components/forge/export-toast";
+import { ForgeOnboarding } from "@/components/forge/forge-onboarding";
 import { GoldParticleCanvas } from "@/components/forge/gold-particle-canvas";
 import { SkillsRail } from "@/components/forge/skills-rail";
 import { ThrmlSignalBar } from "@/components/forge/thrml-signal-bar";
@@ -227,12 +228,14 @@ export function ForgeStudio() {
       </header>
 
       <div className="relative z-10 flex flex-1 flex-col overflow-hidden p-4 pt-0">
+        <ForgeOnboarding locale={locale} />
         <ThrmlSignalBar
           signal={thrmlSignal}
           loading={thrmlLoading}
           error={thrmlError}
           onRetry={retryThrml}
           locale={locale}
+          collapsed={activePanel === "ledger" || activePanel === "deploy"}
         />
         <div className="flex min-h-0 flex-1 gap-4">
           <SkillsRail

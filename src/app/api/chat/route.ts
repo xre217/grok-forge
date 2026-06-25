@@ -14,6 +14,7 @@ type ChatBody = {
   messages?: ChatMessage[];
   locale?: Locale;
   skillPrompt?: string;
+  model?: string;
 };
 
 export async function POST(request: Request) {
@@ -39,7 +40,11 @@ export async function POST(request: Request) {
       "Respond to the latest USER message.",
     ].join("\n");
 
-    const result = await generateWithFallback({ system, prompt });
+    const result = await generateWithFallback({
+      system,
+      prompt,
+      model: body.model,
+    });
 
     return NextResponse.json({
       message: result.text,

@@ -51,6 +51,8 @@ Open the studio, pick a skill, start chatting. Your messages go to **Ollama on y
 | **Session export** | `⌘⇧E` — JSON bundle with chat, ledger slice, runtime, THRML |
 | **Session import** | `⌘⇧I` — restore a previous export |
 | **Chat persistence** | Survives refresh via `localStorage` |
+| **Model picker** | Switch Ollama models in the chat header (no `.env` edit) |
+| **Ledger pin** | Bookmark icon on replies → `POST /api/ledger` |
 | **Ledger panel** | Read optional memory at `~/.jarvis/memory/ledger.jsonl` |
 | **⌘K palette** | Keyboard-first studio control |
 | **EN / 中文** | Bilingual UI toggle |
@@ -169,6 +171,17 @@ FORGE_MODE=local npm run start
 ```
 
 Vercel deploy is optional — Forge is designed to run on your machine.
+
+## Changelog
+
+### v0.2.0
+- Ollama model picker in studio (persisted in browser)
+- Pin assistant replies to ledger
+- First-run onboarding banner
+- THRML bar collapses on Ledger / Local panels
+
+### v0.1.0
+- Public MVP: local chat, skills, THRML, export/import, forkable config
 
 ## License
 

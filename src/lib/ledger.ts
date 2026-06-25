@@ -43,7 +43,7 @@ export function getRecentLedgerEntries(limit = 12): LedgerEntry[] {
 export function formatLedgerContext(limit = 8): string {
   const entries = getRecentLedgerEntries(limit);
   if (!entries.length) {
-    return "No ledger entries found. Constitution path: " + LEDGER_FILE;
+    return `No ledger entries yet (${LEDGER_FILE}). Pin chat replies or POST /api/ledger to add memory.`;
   }
 
   return entries

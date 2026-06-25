@@ -13,7 +13,20 @@ export type ReasoningResult = {
 type GenerateArgs = {
   system: string;
   prompt: string;
+  model?: string;
 };
+
+function resolveOllamaModel(requested?: string) {
+  return requested?.trim() || getOllamaModelId();
+}
+
+function modelMatches(available: string, wanted: string) {
+  return (
+    available === wanted ||
+    available.startsWith(`${wanted}:`) ||
+    wanted.startsWith(`${available}:`)
+  );
+}
 
 const XAI_MODELS = [
   process.env.XAI_MODEL?.trim(),
@@ -71,20 +84,19 @@ export async function getOllamaModels(): Promise<string[]> {
   }
 }
 
-export async function isOllamaAvailable() {
+export async function isOllamaAvailable(requestedModel?: string) {
   const models = await getOllamaModels();
   if (!models.length) return false;
-  const wanted = getOllamaModelId();
-  return models.some(
-    (name) => name === wanted || name.startsWith(`${wanted}:`),
-  );
+  const wanted = resolveOllamaModel(requestedModel);
+  return models.some((name) => modelMatches(name, wanted));
 }
 
 async function generateWithOllama({
   system,
   prompt,
+  model: requestedModel,
 }: GenerateArgs): Promise<ReasoningResult> {
-  const model = getOllamaModelId();
+  const model = resolveOllamaModel(requestedModel);
   const result = await generateText({
     model: getOllamaClient()(model),
     system,
@@ -124,13 +136,16 @@ async function generateWithXai({
 export async function generateWithFallback({
   system,
   prompt,
+  model,
 }: GenerateArgs): Promise<ReasoningResult> {
+  const wanted = resolveOllamaModel(model);
+
   if (isLocalFirst()) {
-    if (await isOllamaAvailable()) {
-      return generateWithOllama({ system, prompt });
+    if (await isOllamaAvailable(wanted)) {
+      return generateWithOllama({ system, prompt, model: wanted });
     }
     throw new Error(
-      `Local Forge needs Ollama with ${getOllamaModelId()}. Run: ollama pull ${getOllamaModelId()}`,
+      `Local Forge needs Ollama with ${wanted}. Run: ollama pull ${wanted}`,
     );
   }
 
@@ -140,16 +155,16 @@ export async function generateWithFallback({
     try {
       return await generateWithXai({ system, prompt });
     } catch (xaiError) {
-      if (await isOllamaAvailable()) {
-        const result = await generateWithOllama({ system, prompt });
+      if (await isOllamaAvailable(wanted)) {
+        const result = await generateWithOllama({ system, prompt, model: wanted });
         return { ...result, fallback: true };
       }
       throw new Error(formatReasoningError(xaiError));
     }
   }
 
-  if (await isOllamaAvailable()) {
-    return generateWithOllama({ system, prompt });
+  if (await isOllamaAvailable(wanted)) {
+    return generateWithOllama({ system, prompt, model: wanted });
   }
 
   throw new Error(

@@ -1,8 +1,8 @@
 {
   "name": "grok-forge",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "Grok Forge — the Arc Reactor of Grok Studio. Flagship product of PROJECT: VILO v1.1.",
+  "description": "Grok Forge — your local AI studio. Chat, skills, memory, export. Ollama-powered.",
   "scripts": {
     "dev": "next dev",
     "dev:local": "FORGE_MODE=local FORGE_LOCAL_FIRST=1 next dev",
