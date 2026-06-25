@@ -2,18 +2,29 @@
 
 import { HoverCard3D } from "@/components/forge/hover-card-3d";
 import { FORGE_FEATURES } from "@/lib/constants";
-import { Sparkles, Zap, Globe, Keyboard } from "lucide-react";
+import {
+  Brain,
+  Download,
+  Globe,
+  Keyboard,
+  Sparkles,
+  Telescope,
+  Zap,
+} from "lucide-react";
 
 const ICONS = {
   sparkles: Sparkles,
   zap: Zap,
   globe: Globe,
   keyboard: Keyboard,
+  brain: Brain,
+  telescope: Telescope,
+  download: Download,
 } as const;
 
 export function FeatureCards() {
   return (
-    <div className="mt-12 grid w-full max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2">
+    <div className="mt-12 grid w-full max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {FORGE_FEATURES.map((feature) => {
         const Icon = ICONS[feature.icon];
         return (

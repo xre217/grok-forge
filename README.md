@@ -4,6 +4,8 @@
 
 Fork it, run it on your machine, own your sessions.
 
+**Self-host & demo walkthrough:** [DEMO.md](./DEMO.md) — local dev, Docker, VPS, troubleshooting.
+
 ## Quick start (5–10 minutes)
 
 ### Prerequisites
@@ -178,26 +180,27 @@ grok-forge/
 │   └── lib/              # Reasoning, ledger, skills, config
 ├── scripts/
 │   ├── setup.sh          # First-run setup
+│   ├── verify-forge.sh   # Health-check routes + studio
 │   ├── run-local.sh      # Production-like local server
 │   └── thrml_signal.py   # THRML Python bridge
+├── DEMO.md               # Self-host & demo walkthrough
 └── .env.example
 ```
 
 ## Docker (Ollama on host)
 
-Forge in Docker talks to Ollama on your machine via `host.docker.internal`:
+See **[DEMO.md](./DEMO.md)** for the full Docker and VPS guide. Quick start:
 
 ```bash
 ollama serve   # keep running on host
 npm run docker:up
 # → http://localhost:3847/studio
+npm run verify http://localhost:3847
 ```
 
 ```bash
 npm run docker:down
 ```
-
-Volumes persist `~/.forge` session backups and ledger at `/data/jarvis` inside the container.
 
 ## VILO pack (Tre / advanced)
 
@@ -234,6 +237,10 @@ FORGE_MODE=local npm run start
 Vercel deploy is optional — Forge is designed to run on your machine.
 
 ## Changelog
+
+### v0.6.2 — Demo & landing
+- **DEMO.md** — local dev, Docker, VPS self-host, demo walkthrough, troubleshooting
+- **Landing page** — stranger-friendly pitch, how-it-works steps, use-case pills, self-host link
 
 ### v0.6.1 — Fork-test polish
 - **setup.sh** — first-run tips (model size, port conflict, `npm run verify`)

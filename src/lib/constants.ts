@@ -1,8 +1,8 @@
 export const FORGE = {
   name: "Grok Forge",
-  tagline: "Expand consciousness. Explore the universe — together.",
-  version: "0.6.1",
-  project: "Grok Forge",
+  tagline: "Your local AI studio — chat, remember, explore, export.",
+  version: "0.6.2",
+  project: "Local AI Studio",
 } as const;
 
 export const ROUTES = {
@@ -14,35 +14,69 @@ export const FORGE_GITHUB_URL =
   process.env.NEXT_PUBLIC_FORGE_GITHUB_URL?.trim() ||
   "https://github.com/xre217/grok-forge";
 
-export const FORGE_FEATURES = [
+export const FORGE_DEMO_URL = `${FORGE_GITHUB_URL}/blob/main/DEMO.md`;
+
+export const FORGE_STEPS = [
   {
-    icon: "sparkles" as const,
-    title: "Magnetic UI",
-    description:
-      "Cursor-pull buttons and 3D tilt cards. Every interaction feels alive.",
+    step: "1",
+    title: "Chat locally",
+    description: "Ollama on your machine. No per-message cloud bill.",
   },
   {
+    step: "2",
+    title: "Remember what matters",
+    description: "Pin insights and explorations — memory shapes every reply.",
+  },
+  {
+    step: "3",
+    title: "Own your session",
+    description: "Export and import JSON bundles. Fork and self-host freely.",
+  },
+] as const;
+
+export const FORGE_USE_CASES = [
+  "Build & debug with skills",
+  "Long-running project thinking",
+  "Team memory via pins & explore",
+  "Private AI without the cloud",
+] as const;
+
+export const FORGE_FEATURES = [
+  {
     icon: "zap" as const,
-    title: "Arc Reactor Canvas",
+    title: "Local Chat",
     description:
-      "Gold particle field with bloom and magnetism — the signature Forge heartbeat.",
+      "Ollama-first reasoning on your hardware. Hybrid cloud optional when you have credits.",
+  },
+  {
+    icon: "brain" as const,
+    title: "Team Memory",
+    description:
+      "Pin replies and log explorations. Active memory injects into every new chat turn.",
+  },
+  {
+    icon: "telescope" as const,
+    title: "Explore Missions",
+    description:
+      "Guided missions for deep topics — distill reflections straight into your ledger.",
+  },
+  {
+    icon: "download" as const,
+    title: "Export & Import",
+    description:
+      "Session bundles with chat, ledger slice, and THRML. You own the archive.",
   },
   {
     icon: "keyboard" as const,
-    title: "⌘K Command Palette",
+    title: "Keyboard Studio",
     description:
-      "Keyboard-first studio control. New chat, skills, ledger, deploy — instant.",
+      "⌘K command palette, model picker, bilingual UI. Built for daily use.",
   },
   {
     icon: "globe" as const,
-    title: "Bilingual Toggle",
-    description: "English ↔ 中文. Mobile-first, glassmorphism, zero compromise.",
-  },
-  {
-    icon: "zap" as const,
-    title: "Local-First",
+    title: "Fork & Self-Host",
     description:
-      "Ollama on your machine. Optional ledger memory. Build without cloud bills.",
+      "MIT licensed. Docker, VPS, or local dev. See DEMO.md for the full walkthrough.",
   },
 ] as const;
 

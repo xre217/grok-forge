@@ -15,8 +15,15 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Grok Forge — Your Local AI Studio",
   description:
-    "Run your own local AI studio — chat, skills, session export, optional ledger memory. Ollama-powered, forkable, zero cloud bill.",
-  keywords: ["Grok", "Grok Studio", "Grok Forge", "Ollama", "local AI", "AI studio"],
+    "Chat, remember, explore, and export — a personal AI workspace on your machine. Ollama-powered, forkable, no cloud bill.",
+  keywords: [
+    "Grok Forge",
+    "local AI studio",
+    "Ollama",
+    "self-host AI",
+    "AI memory",
+    "session export",
+  ],
 };
 
 export default function RootLayout({
