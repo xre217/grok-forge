@@ -3,18 +3,39 @@ import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import path from "node:path";
 
-export type ThrmlSignal = {
-  engine: string;
-  using_thrml: boolean;
-  reason?: string;
-  mode: "observe" | "plan" | "execute" | "verify" | string;
-  scores: {
-    urgency: number;
-    uncertainty: number;
-    exploration: number;
+import type { ThrmlRuntimeInfo, ThrmlSignal } from "@/lib/thrml-types";
+
+export type { ThrmlRuntimeInfo, ThrmlSignal } from "@/lib/thrml-types";
+export { formatThrmlEngineLabel } from "@/lib/thrml-types";
+
+export function getThrmlPythonPath(): string {
+  const localPython = path.join(process.cwd(), ".venv", "bin", "python");
+  return process.env.THRML_PYTHON?.trim() ||
+    (existsSync(localPython) ? localPython : "python3");
+}
+
+export function getThrmlRuntimeInfo(): ThrmlRuntimeInfo {
+  const repoPath = process.env.THRML_REPO_PATH?.trim() || "";
+  const repoConfigured = Boolean(repoPath);
+  const repoExists = repoConfigured && existsSync(repoPath);
+  const bridgeScript = existsSync(
+    path.join(process.cwd(), "scripts", "thrml_signal.py"),
+  );
+  const venvPython = existsSync(path.join(process.cwd(), ".venv", "bin", "python"));
+  const python = getThrmlPythonPath();
+  const setupReady = repoExists && bridgeScript;
+
+  return {
+    repoPath,
+    repoConfigured,
+    repoExists,
+    bridgeScript,
+    python,
+    venvPython,
+    expectedEngine: setupReady ? "thrml-ising" : "deterministic-fallback",
+    setupReady,
   };
-  recommendation: string;
-};
+}
 
 const MODES = ["observe", "plan", "execute", "verify"] as const;
 
@@ -60,9 +81,7 @@ async function thrmlFromPython(prompt: string): Promise<ThrmlSignal | null> {
   const scriptPath = path.join(process.cwd(), "scripts", "thrml_signal.py");
   if (!existsSync(scriptPath)) return null;
 
-  const localPython = path.join(process.cwd(), ".venv", "bin", "python");
-  const python =
-    process.env.THRML_PYTHON ?? (existsSync(localPython) ? localPython : "python3");
+  const python = getThrmlPythonPath();
 
   return new Promise((resolve) => {
     const child = spawn(python, [scriptPath], {

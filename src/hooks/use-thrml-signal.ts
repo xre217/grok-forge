@@ -1,6 +1,6 @@
 "use client";
 
-import type { ThrmlSignal } from "@/lib/thrml";
+import type { ThrmlSignal } from "@/lib/thrml-types";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export function useThrmlSignal(initialPrompt = "Local Forge studio session") {

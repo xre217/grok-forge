@@ -1,7 +1,7 @@
 export const FORGE = {
   name: "Grok Forge",
   tagline: "Your local AI studio — chat, remember, explore, export.",
-  version: "0.12.0",
+  version: "0.13.0",
   project: "Local AI Studio",
 } as const;
 
@@ -15,6 +15,7 @@ export const FORGE_GITHUB_URL =
   "https://github.com/xre217/grok-forge";
 
 export const FORGE_DEMO_URL = `${FORGE_GITHUB_URL}/blob/main/DEMO.md`;
+export const FORGE_THRML_URL = `${FORGE_GITHUB_URL}/blob/main/THRML.md`;
 
 /** Shown on landing — clarifies Forge ≠ Grok cloud app */
 export const FORGE_CLARITY_LINE =

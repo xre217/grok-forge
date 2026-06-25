@@ -1,6 +1,7 @@
 "use client";
 
 import type { EngineSnapshot } from "@/lib/engine-status";
+import type { ThrmlRuntimeInfo } from "@/lib/thrml-types";
 import { useEffect, useState } from "react";
 
 export type ForgeRuntimeStatus = {
@@ -14,6 +15,7 @@ export type ForgeRuntimeStatus = {
     display?: string;
   };
   ollama: { available: boolean; models?: string[] };
+  thrml?: ThrmlRuntimeInfo;
   grok: { configured: boolean; active: boolean; note: string };
   ledger: { path: string; total: number };
   hosting: { command: string; port: number };

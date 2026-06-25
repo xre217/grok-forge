@@ -10,7 +10,7 @@ import {
   EXPLORATION_MISSIONS,
   type ExplorationMission,
 } from "@/lib/explorations";
-import type { ThrmlSignal } from "@/lib/thrml";
+import type { ThrmlSignal } from "@/lib/thrml-types";
 import type { Locale } from "@/types/forge";
 import { cn } from "@/lib/utils";
 import { useTeamBundle } from "@/hooks/use-team-bundle";

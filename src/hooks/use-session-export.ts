@@ -6,7 +6,7 @@ import {
   buildSessionExport,
   downloadSessionExport,
 } from "@/lib/session-export";
-import type { ThrmlSignal } from "@/lib/thrml";
+import type { ThrmlSignal } from "@/lib/thrml-types";
 import type { Locale, StudioPanel } from "@/types/forge";
 import { useCallback, useState } from "react";
 

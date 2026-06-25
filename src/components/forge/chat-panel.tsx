@@ -5,7 +5,7 @@ import { TeamMemoryStrip } from "@/components/forge/team-memory-strip";
 import { LedgerPanel } from "@/components/forge/ledger-panel";
 import { LocalHostPanel } from "@/components/forge/local-host-panel";
 import type { ExplorationMission } from "@/lib/explorations";
-import type { ThrmlSignal } from "@/lib/thrml";
+import type { ThrmlSignal } from "@/lib/thrml-types";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";

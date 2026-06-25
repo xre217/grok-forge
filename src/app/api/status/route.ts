@@ -1,6 +1,7 @@
 import { FORGE } from "@/lib/constants";
 import { buildEngineSnapshot } from "@/lib/engine-status";
 import { getForgeConfig } from "@/lib/forge-config";
+import { getThrmlRuntimeInfo } from "@/lib/thrml";
 import { getLedgerStats } from "@/lib/ledger";
 import { getForgeMode, isLocalFirst } from "@/lib/local-mode";
 import {
@@ -45,6 +46,7 @@ export async function GET() {
     },
     grok: engine.grok,
     ollama: { available: ollama, models },
+    thrml: getThrmlRuntimeInfo(),
     ledger,
     hosting: {
       type: "self-hosted",

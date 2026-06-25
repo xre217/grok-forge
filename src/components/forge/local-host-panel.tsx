@@ -4,7 +4,7 @@ import { RuntimeStatusChip } from "@/components/forge/runtime-status-chip";
 import { Button } from "@/components/ui/button";
 import type { EngineSnapshot } from "@/lib/engine-status";
 import type { Locale } from "@/types/forge";
-import { Cpu, HardDrive, Terminal } from "lucide-react";
+import { Activity, Cpu, HardDrive, Terminal } from "lucide-react";
 
 type LocalStatus = {
   mode: string;
@@ -18,6 +18,13 @@ type LocalStatus = {
   };
   grok?: { configured: boolean; active: boolean; note: string };
   ledger: { path: string; total: number };
+  thrml?: {
+    repoConfigured: boolean;
+    repoExists: boolean;
+    setupReady: boolean;
+    expectedEngine: string;
+    python: string;
+  };
   hosting: { command: string; port: number };
 };
 
@@ -99,6 +106,19 @@ export function LocalHostPanel({
           value={
             status
               ? `${status.ledger.total} entries`
+              : "…"
+          }
+        />
+        <StatusRow
+          icon={<Activity className="size-3.5" />}
+          label="THRML"
+          value={
+            status?.thrml
+              ? status.thrml.setupReady
+                ? "ising · configured"
+                : status.thrml.repoConfigured
+                  ? "repo missing"
+                  : "hash fallback"
               : "…"
           }
         />

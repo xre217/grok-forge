@@ -70,7 +70,7 @@ npm run verify
 |---------|-------------|
 | **Local chat** | Ollama-first reasoning (`llama3.2:3b` by default) |
 | **Skills rail** | Inject system prompts — Build, Debug, Explain, Design, Deploy |
-| **THRML bar** | Observe / plan / execute / verify signal from your prompt |
+| **THRML bar** | Observe / plan / execute / verify — **THRML Ising** or hash fallback badge |
 | **Session export** | `⌘⇧E` — JSON bundle with chat, ledger slice, runtime, THRML |
 | **Session import** | `⌘⇧I` — restore a previous export |
 | **Chat persistence** | Survives refresh via `localStorage` |
@@ -125,14 +125,9 @@ Hybrid (optional): see **[DEMO.md](./DEMO.md#optional-grok-api-hybrid-mode)** �
 
 ## Optional: THRML Ising engine
 
-By default THRML uses a deterministic hash fallback (works out of the box).
+By default THRML uses a **hash fallback** (works out of the box). The studio shows an engine badge: **THRML Ising** (green) vs **Hash fallback** (amber).
 
-For real Ising sampling:
-
-```bash
-pip install jax equinox
-export THRML_REPO_PATH=/path/to/thrml
-```
+For JAX Ising sampling, see **[THRML.md](./THRML.md)**. Quick check: `npm run thrml:check`.
 
 ## API routes
 
@@ -243,6 +238,13 @@ FORGE_MODE=local npm run start
 Vercel deploy is optional — Forge is designed to run on your machine.
 
 ## Changelog
+
+### v0.13.0 — THRML engine clarity
+- **Engine badge** — `THRML Ising` vs `Hash fallback` on signal bar + setup hint panel
+- **THRML.md** — JAX/Ising setup guide, troubleshooting, verify steps
+- **`npm run thrml:check`** — probes `/api/status` + `/api/thrml` for live engine
+- **`/api/status`** — exposes `thrml` runtime config (repo path, setup ready)
+- **Deploy panel** — THRML row (`ising · configured` / `hash fallback`)
 
 ### v0.12.0 — Bundle diff vs ledger
 - **Diff tab** in import preview — bundle entries vs your ledger side-by-side

@@ -1,5 +1,5 @@
 import { FORGE } from "@/lib/constants";
-import type { ThrmlSignal } from "@/lib/thrml";
+import type { ThrmlSignal } from "@/lib/thrml-types";
 import type {
   Locale,
   SessionChatMessage,

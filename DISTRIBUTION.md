@@ -13,8 +13,8 @@ New users: **Use this template** → clone their copy.
 ## 2. Pin the release (1 min)
 
 1. **Releases** → **Draft a new release**
-2. Choose tag `v0.12.0` (or latest)
-3. Title: `v0.12.x — Bundle diff & local studio`
+2. Choose tag `v0.13.0` (or latest)
+3. Title: `v0.13.x — THRML engine badge & local studio`
 4. Paste changelog from README
 5. Publish
 
@@ -81,5 +81,5 @@ Links:
 ## 8. What not to block on
 
 - Vercel deploy (402 billing) — Docker/self-host is the story
-- Real THRML JAX engine — hash fallback is fine for MVP
+- THRML Ising setup optional — see THRML.md; hash fallback is fine for MVP
 - grok-concierge merge — keep Forge lightweight

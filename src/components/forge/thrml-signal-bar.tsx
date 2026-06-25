@@ -1,16 +1,16 @@
 "use client";
 
-import type { ThrmlSignal } from "@/lib/thrml";
+import { ThrmlEngineBadge } from "@/components/forge/thrml-engine-badge";
+import { ThrmlSetupHint } from "@/components/forge/thrml-setup-hint";
+import type { ThrmlSignal } from "@/lib/thrml-types";
 import type { Locale } from "@/types/forge";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import {
   Activity,
   AlertCircle,
-  Info,
   Loader2,
   RotateCcw,
-  Zap,
 } from "lucide-react";
 
 type ThrmlSignalBarProps = {
@@ -55,23 +55,15 @@ const COPY = {
     empty: "Send a message to generate the THRML signal…",
     stale: "Showing last signal",
     retry: "Retry",
-    engine: "Engine",
-    fallbackScores: "Hash-based placeholder scores",
+    isingLive: "JAX Ising sampler active",
   },
   zh: {
     empty: "发送消息以生成 THRML 信号…",
     stale: "显示上次信号",
     retry: "重试",
-    engine: "引擎",
-    fallbackScores: "基于哈希的占位分数",
+    isingLive: "JAX Ising 采样器已启用",
   },
 } as const;
-
-function engineLabel(engine: string, usingThrml: boolean): string {
-  if (usingThrml) return "ising";
-  if (engine === "deterministic-fallback") return "fallback";
-  return engine;
-}
 
 export function ThrmlSignalBar({
   signal,
@@ -82,6 +74,9 @@ export function ThrmlSignalBar({
   collapsed = false,
 }: ThrmlSignalBarProps) {
   const t = COPY[locale];
+  const isIsing = Boolean(
+    signal?.using_thrml && signal.engine === "thrml-ising",
+  );
 
   return (
     <div
@@ -117,50 +112,21 @@ export function ThrmlSignalBar({
             >
               {signal.mode}
             </span>
-            <span
-              className={cn(
-                "flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium",
-                signal.using_thrml
-                  ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-300"
-                  : "border-amber-400/25 bg-amber-500/10 text-amber-200/85",
-              )}
-              title={
-                signal.using_thrml
-                  ? signal.engine
-                  : [signal.engine, signal.reason].filter(Boolean).join(" — ")
-              }
-            >
-              <Zap className="size-3" />
-              {engineLabel(signal.engine, signal.using_thrml)}
-            </span>
+            <ThrmlEngineBadge signal={signal} />
           </div>
         )}
       </div>
 
+      {!collapsed && signal && isIsing && (
+        <p className="mb-3 text-[10px] text-emerald-300/65">{t.isingLive}</p>
+      )}
+
       {!collapsed && signal && !signal.using_thrml && (
-        <div
-          className={cn(
-            "mb-3 flex items-start gap-2 rounded-xl border border-amber-400/15 bg-amber-500/[0.07] px-3 py-2",
-            error && "opacity-60",
-          )}
-        >
-          <Info className="mt-0.5 size-3.5 shrink-0 text-amber-300/80" />
-          <div className="min-w-0 text-[10px] leading-relaxed text-amber-100/75">
-            <p>
-              <span className="font-medium text-amber-100/90">{t.engine}:</span>{" "}
-              <span className="font-mono">{signal.engine}</span>
-              <span className="text-amber-100/50"> · {t.fallbackScores}</span>
-            </p>
-            {signal.reason && (
-              <p
-                className="mt-1 truncate text-amber-100/60"
-                title={signal.reason}
-              >
-                {signal.reason}
-              </p>
-            )}
-          </div>
-        </div>
+        <ThrmlSetupHint
+          signal={signal}
+          locale={locale}
+          className={cn("mb-3", error && "opacity-60")}
+        />
       )}
 
       {!collapsed && error && (
