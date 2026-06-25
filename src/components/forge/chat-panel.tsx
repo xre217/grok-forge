@@ -9,8 +9,11 @@ import type { ThrmlSignal } from "@/lib/thrml";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
+import { EngineBadge } from "@/components/forge/engine-badge";
+import { RuntimeStatusChip } from "@/components/forge/runtime-status-chip";
 import { useForgeChat } from "@/hooks/use-forge-chat";
 import { useForgeModel } from "@/hooks/use-forge-model";
+import { useForgeStatus } from "@/hooks/use-forge-status";
 import { emitChatSent } from "@/lib/forge-events";
 import { pinToLedger } from "@/lib/ledger-client";
 import type { Locale, StudioPanel } from "@/types/forge";
@@ -23,6 +26,11 @@ export type ChatMessage = {
   role: "user" | "assistant";
   content: string;
   memoryInjected?: number;
+  engine?: {
+    provider: "xai" | "ollama";
+    model: string;
+    fallback?: boolean;
+  };
 };
 
 type ChatPanelProps = {
@@ -40,26 +48,20 @@ type ChatPanelProps = {
   onOpenExplore?: () => void;
 };
 
-type ForgeStatus = {
-  mode: string;
-  localFirst: boolean;
-  reasoner: { provider: string; model: string; models?: string[] };
-  ollama: { available: boolean; models?: string[] };
-  ledger: { path: string; total: number };
-  hosting: { command: string; port: number };
-  grok: { configured: boolean; active: boolean };
-};
-
 const COPY = {
   en: {
     placeholder: "Build with the Local Forge…",
-    greeting:
-      "Grok Forge online — Ollama on your machine. Pick a skill or start building. What are we working on?",
+    greetingLocal:
+      "Forge online — Ollama on your machine (not Grok cloud). Pick a skill or start building.",
+    greetingHybrid:
+      "Hybrid mode — tries Grok first, falls back to Ollama. Pin replies to build team memory.",
+    greetingOffline:
+      "Ollama offline. Run: ollama serve — then chat runs locally on your machine.",
     skills: "Skills library active. Pick a skill to inject its system prompt.",
-    thinking: "Reasoning locally…",
+    thinkingLocal: "Reasoning with Ollama…",
+    thinkingHybrid: "Reasoning…",
     error: "Local reasoner failed. Is Ollama running?",
-    chat: "Local Chat",
-    live: "LOCAL",
+    chat: "Chat",
     model: "Model",
     pin: "Pin to ledger",
     pinned: "Pinned",
@@ -69,13 +71,16 @@ const COPY = {
   },
   zh: {
     placeholder: "与本地熔炉一起构建…",
-    greeting:
-      "Grok Forge 已上线——Ollama 在本地运行。选择技能或直接开始。我们要做什么？",
+    greetingLocal:
+      "熔炉已上线——Ollama 在本地运行（非 Grok 云端）。选择技能或直接开始。",
+    greetingHybrid:
+      "混合模式——优先 Grok，回退 Ollama。固定回复以建立团队记忆。",
+    greetingOffline: "Ollama 离线。请运行：ollama serve",
     skills: "技能库已激活。选择技能以注入系统提示。",
-    thinking: "本地推理中…",
+    thinkingLocal: "Ollama 推理中…",
+    thinkingHybrid: "推理中…",
     error: "本地推理失败。Ollama 是否在运行？",
-    chat: "本地对话",
-    live: "本地",
+    chat: "对话",
     model: "模型",
     pin: "固定到账本",
     pinned: "已固定",
@@ -83,6 +88,30 @@ const COPY = {
     memoriesActive: (n: number) => `${n} 条记忆已注入`,
   },
 } as const;
+
+function resolveGreeting(
+  locale: Locale,
+  status: ReturnType<typeof useForgeStatus>,
+): string {
+  const t = COPY[locale];
+  if (!status?.engine) return t.greetingLocal;
+  if (status.engine.chip.variant === "offline") return t.greetingOffline;
+  if (status.engine.chip.variant === "hybrid" || status.engine.chip.variant === "grok") {
+    return t.greetingHybrid;
+  }
+  return t.greetingLocal;
+}
+
+function resolveThinking(
+  locale: Locale,
+  status: ReturnType<typeof useForgeStatus>,
+): string {
+  const t = COPY[locale];
+  if (status?.engine?.chip.variant === "hybrid" || status?.engine?.chip.variant === "grok") {
+    return t.thinkingHybrid;
+  }
+  return t.thinkingLocal;
+}
 
 export function ChatPanel({
   locale,
@@ -99,9 +128,10 @@ export function ChatPanel({
   onOpenExplore,
 }: ChatPanelProps) {
   const t = COPY[locale];
+  const status = useForgeStatus();
+  const greeting = resolveGreeting(locale, status);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [status, setStatus] = useState<ForgeStatus | null>(null);
   const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set());
   const [pinningId, setPinningId] = useState<string | null>(null);
   const { model, setModel } = useForgeModel(
@@ -109,7 +139,7 @@ export function ChatPanel({
   );
   const { messages, setMessages, resetChat } = useForgeChat(
     locale,
-    t.greeting,
+    greeting,
     chatReloadKey,
   );
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -120,11 +150,14 @@ export function ChatPanel({
   }, [messages, isLoading]);
 
   useEffect(() => {
-    fetch("/api/status")
-      .then((r) => r.json())
-      .then(setStatus)
-      .catch(() => null);
-  }, []);
+    if (!status) return;
+    const nextGreeting = resolveGreeting(locale, status);
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === "welcome" ? { ...m, content: nextGreeting } : m,
+      ),
+    );
+  }, [status, locale, setMessages]);
 
   useEffect(() => {
     if (!exploreDiscuss) return;
@@ -185,21 +218,30 @@ export function ChatPanel({
         provider?: string;
         model?: string;
         memoryInjected?: number;
+        fallback?: boolean;
       };
 
       const reply = data.message ?? data.error ?? t.error;
-      const meta =
-        data.provider && data.model
-          ? `\n\n— ${data.provider}/${data.model}`
-          : "";
+      const provider =
+        data.provider === "xai" || data.provider === "ollama"
+          ? data.provider
+          : undefined;
 
       setMessages((prev) => [
         ...prev,
         {
           id: `a-${Date.now()}`,
           role: "assistant",
-          content: `${reply}${meta}`,
+          content: reply,
           memoryInjected: data.memoryInjected,
+          engine:
+            provider && data.model
+              ? {
+                  provider,
+                  model: data.model,
+                  fallback: data.fallback,
+                }
+              : undefined,
         },
       ]);
     } catch {
@@ -239,8 +281,6 @@ export function ChatPanel({
     );
   }
 
-  const isLive =
-    status?.localFirst && status?.ollama?.available;
   const models =
     status?.ollama?.models ??
     status?.reasoner?.models ??
@@ -272,11 +312,7 @@ export function ChatPanel({
         <div className="flex items-center gap-2">
           <Sparkles className="size-4 text-[var(--forge-gold)]" />
           <span className="text-sm font-medium text-white">{t.chat}</span>
-          {isLive && (
-            <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] text-emerald-400">
-              {t.live}
-            </span>
-          )}
+          <RuntimeStatusChip engine={status?.engine ?? null} />
         </div>
         <div className="flex items-center gap-2">
           {models.length > 0 && (
@@ -304,7 +340,7 @@ export function ChatPanel({
             <button
               type="button"
               onClick={() => {
-                resetChat(t.greeting);
+                resetChat(greeting);
                 onResetChat();
               }}
               className="text-[10px] text-white/30 hover:text-white/60"
@@ -330,10 +366,18 @@ export function ChatPanel({
               )}
             >
               {msg.content}
+              {msg.role === "assistant" && msg.engine && (
+                <EngineBadge
+                  provider={msg.engine.provider}
+                  model={msg.engine.model}
+                  fallback={msg.engine.fallback}
+                  locale={locale}
+                />
+              )}
               {msg.role === "assistant" &&
                 msg.memoryInjected != null &&
                 msg.memoryInjected > 0 && (
-                  <span className="mt-2 block text-[9px] font-medium uppercase tracking-wider text-violet-300/55">
+                  <span className="mt-1.5 block text-[9px] font-medium uppercase tracking-wider text-violet-300/55">
                     {t.memoriesActive(msg.memoryInjected)}
                   </span>
                 )}
@@ -363,7 +407,7 @@ export function ChatPanel({
           {isLoading && (
             <div className="flex items-center gap-2 text-sm text-white/40">
               <Loader2 className="size-4 animate-spin" />
-              {t.thinking}
+              {resolveThinking(locale, status)}
             </div>
           )}
           <div ref={bottomRef} />

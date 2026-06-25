@@ -8,6 +8,8 @@ import { GoldParticleCanvas } from "@/components/forge/gold-particle-canvas";
 import { SkillsRail } from "@/components/forge/skills-rail";
 import { ThrmlSignalBar } from "@/components/forge/thrml-signal-bar";
 import { Button } from "@/components/ui/button";
+import { RuntimeStatusChip } from "@/components/forge/runtime-status-chip";
+import { useForgeStatus } from "@/hooks/use-forge-status";
 import { useSessionExport } from "@/hooks/use-session-export";
 import { useSessionImport } from "@/hooks/use-session-import";
 import { useThrmlSignal } from "@/hooks/use-thrml-signal";
@@ -24,6 +26,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 const DEFAULT_THRML_PROMPT = "Grok Forge studio session";
 
 export function ForgeStudio() {
+  const runtimeStatus = useForgeStatus();
   const [locale, setLocale] = useState<Locale>("en");
   const [activePanel, setActivePanel] = useState<StudioPanel>("chat");
   const [activeSkill, setActiveSkill] = useState<string | null>(null);
@@ -175,9 +178,10 @@ export function ForgeStudio() {
             {FORGE.name}
           </Link>
           <span className="hidden text-xs text-white/30 sm:inline">/ studio</span>
-          <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
-            LOCAL
-          </span>
+          <RuntimeStatusChip
+            engine={runtimeStatus?.engine ?? null}
+            size="md"
+          />
         </div>
         <div className="flex items-center gap-2">
           <Button

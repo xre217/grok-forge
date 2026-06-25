@@ -193,16 +193,41 @@ Copy `.env.example` → `.env.local` for local dev. Docker reads from `docker-co
 
 ---
 
-## Optional: cloud Grok layer
+## Optional: Grok API (hybrid mode)
 
-When you have xAI credits:
+**Forge is not the Grok app.** By default everything runs on **Ollama locally**.
+Grok only appears when you opt in with an API key.
+
+### Hybrid setup
 
 ```bash
+# .env.local
 FORGE_MODE=hybrid
-XAI_API_KEY=your-key
+# Remove or set FORGE_LOCAL_FIRST=0 so hybrid can reach xAI
+FORGE_LOCAL_FIRST=0
+XAI_API_KEY=your-xai-key
+XAI_MODEL=grok-4.3
 ```
 
-Local mode works without any cloud keys.
+Restart the server, then check the studio header chip:
+
+| Chip | Meaning |
+|------|---------|
+| **LOCAL** | Ollama only — Grok not used |
+| **HYBRID** | Grok first, Ollama fallback if credits fail |
+| **GROK** | Cloud mode — API only |
+| **OFFLINE** | Ollama not running |
+
+Each assistant reply shows an **engine badge** (`Ollama · model` or `Grok · model`).
+Fallback replies also show **Ollama fallback**.
+
+### Stay local-only (recommended for forks)
+
+```bash
+FORGE_MODE=local
+FORGE_LOCAL_FIRST=1
+# No XAI_API_KEY needed
+```
 
 ---
 

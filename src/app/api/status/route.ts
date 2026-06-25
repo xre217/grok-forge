@@ -1,4 +1,5 @@
 import { FORGE } from "@/lib/constants";
+import { buildEngineSnapshot } from "@/lib/engine-status";
 import { getForgeConfig } from "@/lib/forge-config";
 import { getLedgerStats } from "@/lib/ledger";
 import { getForgeMode, isLocalFirst } from "@/lib/local-mode";
@@ -18,6 +19,15 @@ export async function GET() {
   const ollama = await isOllamaAvailable();
   const models = await getOllamaModels();
   const ledger = getLedgerStats();
+  const grokConfigured = Boolean(process.env.XAI_API_KEY?.trim());
+  const ollamaModel = getOllamaModelId();
+  const engine = buildEngineSnapshot({
+    mode,
+    localFirst: local,
+    ollamaAvailable: ollama,
+    ollamaModel,
+    grokConfigured,
+  });
 
   return NextResponse.json({
     service: FORGE.name,
@@ -26,23 +36,14 @@ export async function GET() {
     pack: config.pack,
     mode,
     localFirst: local,
-    reasoner: local
-      ? {
-          provider: ollama ? "ollama" : "offline",
-          model: getOllamaModelId(),
-          models,
-        }
-      : {
-          provider: ollama ? "ollama-fallback" : "cloud-only",
-          model: getOllamaModelId(),
-        },
-    grok: {
-      configured: Boolean(process.env.XAI_API_KEY?.trim()),
-      active: !local,
-      note: local
-        ? "Bypassed — Local Forge uses Ollama"
-        : "Optional cloud layer",
+    engine,
+    reasoner: {
+      provider: engine.primary.provider,
+      model: engine.primary.model,
+      models: local ? models : undefined,
+      display: engine.primary.display,
     },
+    grok: engine.grok,
     ollama: { available: ollama, models },
     ledger,
     hosting: {

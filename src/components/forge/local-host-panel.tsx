@@ -1,13 +1,22 @@
 "use client";
 
+import { RuntimeStatusChip } from "@/components/forge/runtime-status-chip";
 import { Button } from "@/components/ui/button";
+import type { EngineSnapshot } from "@/lib/engine-status";
 import type { Locale } from "@/types/forge";
 import { Cpu, HardDrive, Terminal } from "lucide-react";
 
 type LocalStatus = {
   mode: string;
   localFirst: boolean;
-  reasoner: { provider: string; model: string; models?: string[] };
+  engine?: EngineSnapshot;
+  reasoner: {
+    provider: string;
+    model: string;
+    models?: string[];
+    display?: string;
+  };
+  grok?: { configured: boolean; active: boolean; note: string };
   ledger: { path: string; total: number };
   hosting: { command: string; port: number };
 };
@@ -42,30 +51,47 @@ export function LocalHostPanel({
 
   return (
     <div className="forge-glass flex h-full flex-1 flex-col rounded-2xl p-6">
-      <div className="mb-6 flex items-center gap-2">
-        <HardDrive className="size-5 text-[var(--forge-gold)]" />
-        <div>
-          <h2 className="text-lg font-semibold text-[var(--forge-gold)]">
-            {t.title}
-          </h2>
-          <p className="text-xs text-white/45">{t.subtitle}</p>
+      <div className="mb-6 flex items-start justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <HardDrive className="size-5 text-[var(--forge-gold)]" />
+          <div>
+            <h2 className="text-lg font-semibold text-[var(--forge-gold)]">
+              {t.title}
+            </h2>
+            <p className="text-xs text-white/45">{t.subtitle}</p>
+          </div>
         </div>
+        <RuntimeStatusChip engine={status?.engine ?? null} size="md" />
       </div>
 
       <div className="mb-6 space-y-3">
         <StatusRow
           icon={<Cpu className="size-3.5" />}
-          label="Reasoner"
+          label="Engine"
           value={
-            status
+            status?.reasoner.display ??
+            (status
               ? `${status.reasoner.provider} · ${status.reasoner.model}`
-              : "…"
+              : "…")
           }
         />
         <StatusRow
           icon={<Terminal className="size-3.5" />}
           label="Mode"
-          value={status?.mode ?? "local"}
+          value={status?.engine?.chip.label ?? status?.mode ?? "local"}
+        />
+        <StatusRow
+          icon={<Cpu className="size-3.5" />}
+          label="Grok API"
+          value={
+            status?.grok
+              ? status.grok.configured
+                ? status.grok.active
+                  ? "connected"
+                  : "configured · bypassed"
+                : "not configured"
+              : "…"
+          }
         />
         <StatusRow
           icon={<HardDrive className="size-3.5" />}

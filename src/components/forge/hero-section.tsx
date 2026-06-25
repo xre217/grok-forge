@@ -4,6 +4,7 @@ import { FeatureCards } from "@/components/forge/feature-cards";
 import { MagneticButton } from "@/components/forge/magnetic-button";
 import {
   FORGE,
+  FORGE_CLARITY_LINE,
   FORGE_DEMO_URL,
   FORGE_GITHUB_URL,
   FORGE_STEPS,
@@ -36,10 +37,13 @@ export function HeroSection() {
         <p className="mx-auto mb-4 max-w-xl text-lg leading-relaxed text-white/70">
           {FORGE.tagline}
         </p>
-        <p className="mx-auto mb-6 max-w-lg text-sm leading-relaxed text-white/45">
+        <p className="mx-auto mb-3 max-w-lg text-sm leading-relaxed text-white/45">
           A personal AI workspace on your computer — chat, save what matters,
           export everything. Like a workshop in your garage, not a rented desk
           in the cloud.
+        </p>
+        <p className="mx-auto mb-6 max-w-md rounded-xl border border-sky-500/20 bg-sky-500/[0.07] px-4 py-2 text-xs leading-relaxed text-sky-200/80">
+          {FORGE_CLARITY_LINE}
         </p>
 
         <div className="mb-8 flex flex-wrap items-center justify-center gap-2">

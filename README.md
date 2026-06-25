@@ -108,16 +108,13 @@ FORGE_PACK=vilo
 NEXT_PUBLIC_FORGE_PACK=vilo
 ```
 
-## Optional: cloud Grok (xAI)
+## Forge ≠ Grok cloud
 
-When you have xAI credits:
+**Grok Forge** is your local studio. **Grok** (xAI) is an optional API engine.
 
-```bash
-FORGE_MODE=hybrid
-XAI_API_KEY=your-key
-```
+Default (`FORGE_MODE=local`): Ollama only — no xAI key, no cloud bill.
 
-Local mode bypasses xAI entirely — useful when credits are exhausted.
+Hybrid (optional): see **[DEMO.md](./DEMO.md#optional-grok-api-hybrid-mode)** — studio shows `LOCAL` / `HYBRID` / `GROK` chips and per-reply engine badges.
 
 ## Optional: THRML Ising engine
 
@@ -237,6 +234,12 @@ FORGE_MODE=local npm run start
 Vercel deploy is optional — Forge is designed to run on your machine.
 
 ## Changelog
+
+### v0.7.0 — Engine clarity
+- **Runtime chips** — `LOCAL` / `HYBRID` / `GROK` / `OFFLINE` in studio + chat headers
+- **Engine badges** on every assistant reply (`Ollama · model` / `Grok · model` + fallback)
+- **Landing callout** — "Not the Grok chatbot. Ollama by default."
+- **DEMO.md** — hybrid Grok API setup guide
 
 ### v0.6.2 — Demo & landing
 - **DEMO.md** — local dev, Docker, VPS self-host, demo walkthrough, troubleshooting
