@@ -2,7 +2,7 @@
 
 import { FORGE_LEDGER_UPDATED } from "@/lib/forge-events";
 import type { Locale } from "@/types/forge";
-import { Brain, Loader2 } from "lucide-react";
+import { Brain, Loader2, Telescope } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 type MemoryEntry = {
@@ -15,17 +15,26 @@ type MemoryEntry = {
 const COPY = {
   en: {
     title: "Team memory",
-    empty: "Pin replies or Explore → log to activate memory",
+    empty: "No memory yet — activate the loop:",
+    pinHint: "hover a reply → bookmark",
+    explore: "Explore",
     active: "Injected into every chat turn",
   },
   zh: {
     title: "团队记忆",
-    empty: "固定回复或探索记录以激活记忆",
+    empty: "尚无记忆——激活循环：",
+    pinHint: "悬停回复 → 书签",
+    explore: "探索",
     active: "已注入每次对话",
   },
 } as const;
 
-export function TeamMemoryStrip({ locale }: { locale: Locale }) {
+type TeamMemoryStripProps = {
+  locale: Locale;
+  onOpenExplore?: () => void;
+};
+
+export function TeamMemoryStrip({ locale, onOpenExplore }: TeamMemoryStripProps) {
   const t = COPY[locale];
   const [entries, setEntries] = useState<MemoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,9 +70,20 @@ export function TeamMemoryStrip({ locale }: { locale: Locale }) {
 
   if (entries.length === 0) {
     return (
-      <div className="flex items-center gap-2 border-b border-white/5 px-4 py-2 text-[10px] text-white/30">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-white/5 px-4 py-2 text-[10px] text-white/30">
         <Brain className="size-3 text-violet-300/60" />
-        {t.empty}
+        <span>{t.empty}</span>
+        <span className="text-white/20">{t.pinHint}</span>
+        {onOpenExplore && (
+          <button
+            type="button"
+            onClick={onOpenExplore}
+            className="inline-flex items-center gap-1 rounded-md border border-violet-400/20 bg-violet-500/10 px-2 py-0.5 text-violet-300/80 transition-colors hover:bg-violet-500/20"
+          >
+            <Telescope className="size-3" />
+            {t.explore}
+          </button>
+        )}
       </div>
     );
   }
@@ -74,6 +94,9 @@ export function TeamMemoryStrip({ locale }: { locale: Locale }) {
         <Brain className="size-3" />
         <span className="font-medium uppercase tracking-wider">{t.title}</span>
         <span className="text-white/25">· {t.active}</span>
+        <span className="rounded-full bg-violet-500/15 px-1.5 py-px text-[9px] text-violet-200/70">
+          {entries.length}
+        </span>
       </div>
       <div className="flex gap-2 overflow-x-auto pb-0.5">
         {entries.slice(0, 4).map((entry) => (

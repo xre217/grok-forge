@@ -233,7 +233,10 @@ export function ForgeStudio() {
       </header>
 
       <div className="relative z-10 flex flex-1 flex-col overflow-hidden p-4 pt-0">
-        <ForgeOnboarding locale={locale} />
+        <ForgeOnboarding
+          locale={locale}
+          onOpenExplore={() => setActivePanel("explore")}
+        />
         <ThrmlSignalBar
           signal={thrmlSignal}
           loading={thrmlLoading}
@@ -271,6 +274,7 @@ export function ForgeStudio() {
             }}
             onSend={handleChatSend}
             onResetChat={newChat}
+            onOpenExplore={() => setActivePanel("explore")}
           />
         </div>
       </div>

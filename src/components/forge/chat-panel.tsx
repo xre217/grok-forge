@@ -11,6 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { useForgeChat } from "@/hooks/use-forge-chat";
 import { useForgeModel } from "@/hooks/use-forge-model";
+import { emitChatSent } from "@/lib/forge-events";
 import { pinToLedger } from "@/lib/ledger-client";
 import type { Locale, StudioPanel } from "@/types/forge";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,7 @@ export type ChatMessage = {
   id: string;
   role: "user" | "assistant";
   content: string;
+  memoryInjected?: number;
 };
 
 type ChatPanelProps = {
@@ -35,6 +37,7 @@ type ChatPanelProps = {
   onExploreDiscussConsumed?: () => void;
   onSend?: (message: string) => void;
   onResetChat?: () => void;
+  onOpenExplore?: () => void;
 };
 
 type ForgeStatus = {
@@ -61,6 +64,8 @@ const COPY = {
     pin: "Pin to ledger",
     pinned: "Pinned",
     pinFailed: "Ledger pin failed",
+    memoriesActive: (n: number) =>
+      n === 1 ? "1 memory active" : `${n} memories active`,
   },
   zh: {
     placeholder: "与本地熔炉一起构建…",
@@ -75,6 +80,7 @@ const COPY = {
     pin: "固定到账本",
     pinned: "已固定",
     pinFailed: "账本写入失败",
+    memoriesActive: (n: number) => `${n} 条记忆已注入`,
   },
 } as const;
 
@@ -90,6 +96,7 @@ export function ChatPanel({
   onExploreDiscussConsumed,
   onSend,
   onResetChat,
+  onOpenExplore,
 }: ChatPanelProps) {
   const t = COPY[locale];
   const [input, setInput] = useState("");
@@ -156,6 +163,7 @@ export function ChatPanel({
     setInput("");
     setIsLoading(true);
     onSend?.(text);
+    emitChatSent();
 
     try {
       const res = await fetch("/api/chat", {
@@ -176,6 +184,7 @@ export function ChatPanel({
         error?: string;
         provider?: string;
         model?: string;
+        memoryInjected?: number;
       };
 
       const reply = data.message ?? data.error ?? t.error;
@@ -190,6 +199,7 @@ export function ChatPanel({
           id: `a-${Date.now()}`,
           role: "assistant",
           content: `${reply}${meta}`,
+          memoryInjected: data.memoryInjected,
         },
       ]);
     } catch {
@@ -305,7 +315,7 @@ export function ChatPanel({
         </div>
       </div>
 
-      <TeamMemoryStrip locale={locale} />
+      <TeamMemoryStrip locale={locale} onOpenExplore={onOpenExplore} />
 
       <ScrollArea className="flex-1 px-4 py-4">
         <div className="flex flex-col gap-4">
@@ -320,6 +330,13 @@ export function ChatPanel({
               )}
             >
               {msg.content}
+              {msg.role === "assistant" &&
+                msg.memoryInjected != null &&
+                msg.memoryInjected > 0 && (
+                  <span className="mt-2 block text-[9px] font-medium uppercase tracking-wider text-violet-300/55">
+                    {t.memoriesActive(msg.memoryInjected)}
+                  </span>
+                )}
               {msg.role === "assistant" &&
                 msg.id !== "welcome" &&
                 !msg.id.startsWith("skill-") &&

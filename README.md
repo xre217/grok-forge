@@ -58,6 +58,8 @@ Open the studio, pick a skill, start chatting. Your messages go to **Ollama on y
 | **Consciousness Stream** | Team exploration log from ledger |
 | **Team memory** | Ledger pins + explorations injected into every chat turn |
 | **Memory strip** | Live preview of active team memory above chat |
+| **First-run checklist** | Three-step onboarding to activate the memory loop |
+| **Memory badge** | Shows how many memories shaped each reply |
 | **⌘K palette** | Keyboard-first studio control |
 | **EN / 中文** | Bilingual UI toggle |
 
@@ -213,6 +215,11 @@ FORGE_MODE=local npm run start
 Vercel deploy is optional — Forge is designed to run on your machine.
 
 ## Changelog
+
+### v0.6.0 — First-run memory
+- **Onboarding checklist** — chat → pin/explore → memory live (auto-dismisses when done)
+- **Memory badge** on assistant replies (`N memories active`)
+- **Empty-state CTAs** on memory strip — pin hint + Open Explore button
 
 ### v0.5.0 — Closed memory loop
 - **Team memory** — explorations, pins, and forge entries prioritized into chat system prompt
