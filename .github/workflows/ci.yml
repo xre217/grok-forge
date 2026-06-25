@@ -17,9 +17,7 @@ jobs:
           node-version: 20
           cache: npm
 
-      - run: npm ci
-      - run: npx tsc --noEmit
-      - run: npm run build
+      - run: npm run fork-test
         env:
           FORGE_MODE: local
           FORGE_LOCAL_FIRST: "1"

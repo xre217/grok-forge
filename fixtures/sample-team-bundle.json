@@ -1,0 +1,53 @@
+{
+  "format": "grok-forge-team-bundle",
+  "version": "1.0",
+  "exportedAt": "2026-06-25T12:00:00.000Z",
+  "forge": {
+    "name": "Grok Forge",
+    "version": "0.8.1",
+    "tagline": "Your local AI studio — chat, remember, explore, export."
+  },
+  "team": {
+    "label": "verify-fixture",
+    "locale": "en"
+  },
+  "memory": {
+    "entries": [
+      {
+        "id": "fixture-team-bundle-1",
+        "ts": "2026-06-25T12:00:00.000Z",
+        "type": "exploration",
+        "claim": "Forge verify fixture — crew memory import smoke test.",
+        "evidence": "Automated verify-forge.sh team bundle check.",
+        "confidence": 0.9,
+        "tags": ["exploration", "mission:cosmic-horizon", "team", "fixture"],
+        "source": "grok-forge-fixture"
+      }
+    ]
+  },
+  "missions": [
+    {
+      "missionId": "cosmic-horizon",
+      "title": "Cosmic Horizon",
+      "titleZh": "宇宙地平线",
+      "domain": "cosmos",
+      "entryCount": 1,
+      "entries": [
+        {
+          "id": "fixture-team-bundle-1",
+          "ts": "2026-06-25T12:00:00.000Z",
+          "type": "exploration",
+          "claim": "Forge verify fixture — crew memory import smoke test.",
+          "tags": ["exploration", "mission:cosmic-horizon", "team", "fixture"],
+          "source": "grok-forge-fixture"
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "explorations": 1,
+    "pinned": 0,
+    "total": 1
+  },
+  "summary": "# Grok Forge Team Bundle — verify fixture"
+}

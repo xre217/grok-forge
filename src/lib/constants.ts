@@ -1,7 +1,7 @@
 export const FORGE = {
   name: "Grok Forge",
   tagline: "Your local AI studio — chat, remember, explore, export.",
-  version: "0.8.0",
+  version: "0.8.1",
   project: "Local AI Studio",
 } as const;
 
@@ -33,8 +33,8 @@ export const FORGE_STEPS = [
   },
   {
     step: "3",
-    title: "Own your session",
-    description: "Export and import JSON bundles. Fork and self-host freely.",
+    title: "Share with your crew",
+    description: "Team bundles for explorations + memory. Session export for full chat.",
   },
 ] as const;
 
@@ -66,9 +66,9 @@ export const FORGE_FEATURES = [
   },
   {
     icon: "download" as const,
-    title: "Export & Import",
+    title: "Team Bundles",
     description:
-      "Session bundles with chat, ledger slice, and THRML. You own the archive.",
+      "Export crew memory JSON — explorations, pins, missions. Import merges into ledger.",
   },
   {
     icon: "keyboard" as const,

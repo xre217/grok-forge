@@ -22,6 +22,7 @@ import {
   Telescope,
   Terminal,
   Upload,
+  Users,
 } from "lucide-react";
 import type { Locale } from "@/types/forge";
 import { useRouter } from "next/navigation";
@@ -34,6 +35,8 @@ type CommandPaletteProps = {
   onToggleLocale?: () => void;
   onExport?: () => void;
   onImport?: () => void;
+  onExportTeamBundle?: () => void;
+  onImportTeamBundle?: () => void;
   locale?: Locale;
 };
 
@@ -43,6 +46,8 @@ export function CommandPalette({
   onToggleLocale,
   onExport,
   onImport,
+  onExportTeamBundle,
+  onImportTeamBundle,
   locale = "en",
 }: CommandPaletteProps) {
   const [open, setOpen] = useState(false);
@@ -108,8 +113,27 @@ export function CommandPalette({
           </CommandItem>
           <CommandItem onSelect={() => run(() => onImport?.())}>
             <Upload />
-            {locale === "zh" ? "导入会话" : "Import session"}
+            {locale === "zh" ? "导入会话/团队包" : "Import session / bundle"}
             <CommandShortcut>⌘⇧I</CommandShortcut>
+          </CommandItem>
+          <CommandItem
+            onSelect={() => {
+              run(() => onPanelChange?.("explore"));
+              onExportTeamBundle?.();
+            }}
+          >
+            <Users />
+            {locale === "zh" ? "导出团队包" : "Export team bundle"}
+            <CommandShortcut>⌘⇧B</CommandShortcut>
+          </CommandItem>
+          <CommandItem
+            onSelect={() => {
+              run(() => onPanelChange?.("explore"));
+              onImportTeamBundle?.();
+            }}
+          >
+            <Upload />
+            {locale === "zh" ? "导入团队包" : "Import team bundle"}
           </CommandItem>
         </CommandGroup>
         <CommandSeparator />

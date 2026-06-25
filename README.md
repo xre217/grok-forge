@@ -6,6 +6,8 @@ Fork it, run it on your machine, own your sessions.
 
 **Self-host & demo walkthrough:** [DEMO.md](./DEMO.md) — local dev, Docker, VPS, troubleshooting.
 
+**Ship / fork checklist:** [DISTRIBUTION.md](./DISTRIBUTION.md) — template repo, GIF, blind fork test.
+
 ## Quick start (5–10 minutes)
 
 ### Prerequisites
@@ -224,7 +226,8 @@ On GitHub: **Settings → General → Template repository** (enable), then other
 | `npm run vilo:preset` | Enable VILO pack in `.env.local` |
 | `npm run docker:up` | Docker Compose build + run |
 | `npm run docker:down` | Stop Docker stack |
-| `npm run verify` | Health-check all API routes + studio (`npm run verify http://localhost:3001`) |
+| `npm run verify` | Health-check routes + team bundle import (`npm run verify http://localhost:3001`) |
+| `npm run fork-test` | Stranger path: `npm ci` + typecheck + build (no Ollama) |
 
 ## Deploy (self-hosted)
 
@@ -236,6 +239,12 @@ FORGE_MODE=local npm run start
 Vercel deploy is optional — Forge is designed to run on your machine.
 
 ## Changelog
+
+### v0.8.1 — Distribution & crew shortcuts
+- **`DISTRIBUTION.md`** — template repo, GIF, release, blind fork checklist
+- **`npm run fork-test`** — CI + local stranger build path (no Ollama)
+- **`⌘⇧B`** + ⌘K — export team bundle; verify imports fixture bundle
+- Command palette team bundle commands
 
 ### v0.8.0 — Team bundles
 - **Team bundle export** — explorations, pins, mission slices as `grok-forge-team-bundle` JSON

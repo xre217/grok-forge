@@ -12,6 +12,7 @@ import { RuntimeStatusChip } from "@/components/forge/runtime-status-chip";
 import { useForgeStatus } from "@/hooks/use-forge-status";
 import { useSessionExport } from "@/hooks/use-session-export";
 import { useSessionImport } from "@/hooks/use-session-import";
+import { useTeamBundle } from "@/hooks/use-team-bundle";
 import { readTeamBundleFile } from "@/lib/team-bundle";
 import { emitLedgerUpdated } from "@/lib/forge-events";
 import { useThrmlSignal } from "@/hooks/use-thrml-signal";
@@ -64,6 +65,7 @@ export function ForgeStudio() {
   });
 
   const { importSession, isImporting } = useSessionImport();
+  const { exportBundle } = useTeamBundle(locale);
 
   const skillPrompt = useMemo(() => {
     if (!activeSkill) return undefined;
@@ -100,6 +102,30 @@ export function ForgeStudio() {
       });
     }
   }, [exportSession, locale]);
+
+  const handleExportTeamBundle = useCallback(async () => {
+    try {
+      setActivePanel("explore");
+      const result = await exportBundle();
+      if (result) {
+        setToast({
+          title: locale === "zh" ? "团队包已导出" : "Team bundle exported",
+          detail: `${result.count} entries → ${result.filename}`,
+        });
+        confetti({
+          particleCount: 30,
+          spread: 45,
+          origin: { x: 0.88, y: 0.88 },
+          colors: ["#38bdf8", "#d4af37", "#fff4b8"],
+        });
+      }
+    } catch (err) {
+      setToast({
+        title: locale === "zh" ? "导出失败" : "Export failed",
+        detail: err instanceof Error ? err.message : "Team bundle export failed",
+      });
+    }
+  }, [exportBundle, locale]);
 
   const handleImportPick = useCallback(
     async (file: File) => {
@@ -188,10 +214,14 @@ export function ForgeStudio() {
         e.preventDefault();
         importInputRef.current?.click();
       }
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        void handleExportTeamBundle();
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [handleExport]);
+  }, [handleExport, handleExportTeamBundle]);
 
   return (
     <div className="relative flex min-h-screen flex-col bg-[var(--forge-void)]">
@@ -341,6 +371,8 @@ export function ForgeStudio() {
         }
         onExport={() => void handleExport()}
         onImport={() => importInputRef.current?.click()}
+        onExportTeamBundle={() => void handleExportTeamBundle()}
+        onImportTeamBundle={() => importInputRef.current?.click()}
         locale={locale}
       />
 
