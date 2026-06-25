@@ -16,6 +16,11 @@ import { useSessionImport } from "@/hooks/use-session-import";
 import { useTeamBundle } from "@/hooks/use-team-bundle";
 import { TeamBundleCompareDialog } from "@/components/forge/team-bundle-compare-dialog";
 import { TeamBundleImportPreviewDialog } from "@/components/forge/team-bundle-import-preview";
+import {
+  applyCrewLogImport,
+  exportAndDownloadCrewLog,
+  validateCrewLogBundle,
+} from "@/lib/crew-log-bundle";
 import { validateTeamBundle } from "@/lib/team-bundle";
 import { useThrmlSignal } from "@/hooks/use-thrml-signal";
 import { FORGE, ROUTES } from "@/lib/constants";
@@ -138,6 +143,22 @@ export function ForgeStudio() {
     }
   }, [exportBundle, locale]);
 
+  const handleExportCrewLog = useCallback(() => {
+    try {
+      setActivePanel("crew");
+      const result = exportAndDownloadCrewLog(locale);
+      setToast({
+        title: locale === "zh" ? "团队日志已导出" : "Crew log exported",
+        detail: `${result.count} events → ${result.filename}`,
+      });
+    } catch (err) {
+      setToast({
+        title: locale === "zh" ? "导出失败" : "Export failed",
+        detail: err instanceof Error ? err.message : "Crew log export failed",
+      });
+    }
+  }, [locale]);
+
   const handleImportPick = useCallback(
     async (file: File) => {
       try {
@@ -154,6 +175,20 @@ export function ForgeStudio() {
         if (validateTeamBundle(parsed)) {
           setActivePanel("explore");
           await stageImport(new File([peek], file.name, { type: file.type }));
+          return;
+        }
+
+        const crewBundle = validateCrewLogBundle(parsed);
+        if (crewBundle) {
+          setActivePanel("crew");
+          const result = applyCrewLogImport(crewBundle);
+          setToast({
+            title: locale === "zh" ? "团队日志已导入" : "Crew log imported",
+            detail:
+              locale === "zh"
+                ? `合并 ${result.merged} 条，跳过 ${result.skipped} 条`
+                : `${result.merged} merged, ${result.skipped} skipped`,
+          });
           return;
         }
 
@@ -208,10 +243,14 @@ export function ForgeStudio() {
         e.preventDefault();
         void handleExportTeamBundle();
       }
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "l") {
+        e.preventDefault();
+        handleExportCrewLog();
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [handleExport, handleExportTeamBundle]);
+  }, [handleExport, handleExportCrewLog, handleExportTeamBundle]);
 
   return (
     <div className="relative flex min-h-screen flex-col bg-[var(--forge-void)]">
@@ -358,6 +397,18 @@ export function ForgeStudio() {
               setActivePanel("explore");
               setCompareBundlesOpen(true);
             }}
+            onCrewLogExported={(detail) =>
+              setToast({
+                title: locale === "zh" ? "团队日志已导出" : "Crew log exported",
+                detail,
+              })
+            }
+            onCrewLogImported={(detail) =>
+              setToast({
+                title: locale === "zh" ? "团队日志已导入" : "Crew log imported",
+                detail,
+              })
+            }
           />
         </div>
       </div>
@@ -375,6 +426,11 @@ export function ForgeStudio() {
         onCompareTeamBundles={() => {
           setActivePanel("explore");
           setCompareBundlesOpen(true);
+        }}
+        onExportCrewLog={() => handleExportCrewLog()}
+        onImportCrewLog={() => {
+          setActivePanel("crew");
+          importInputRef.current?.click();
         }}
         locale={locale}
       />

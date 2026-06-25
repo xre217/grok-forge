@@ -239,6 +239,12 @@ Vercel deploy is optional — Forge is designed to run on your machine.
 
 ## Changelog
 
+### v0.18.0 — Crew log export
+- **`grok-forge-crew-log` v1.0** — standalone JSON export/import for crew activity
+- **Crew log panel** — Export log / Import log; filtered view exports only matching events
+- **Studio import** (`⌘⇧I`) — auto-detects crew log JSON and merges by id (deduped)
+- **⌘K** — Export crew log (`⌘⇧L` shortcut in palette)
+
 ### v0.17.0 — Import winner after compare
 - **Compare → import** — Import A / Import B opens the ledger diff preview before merge
 - **Suggested badge** — picks winner by new vs ledger, uniqueness vs other bundle, then recency

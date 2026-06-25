@@ -52,6 +52,8 @@ type ChatPanelProps = {
   onOpenExplore?: () => void;
   onBundleImported?: (detail: string) => void;
   onCompareBundles?: () => void;
+  onCrewLogExported?: (detail: string) => void;
+  onCrewLogImported?: (detail: string) => void;
 };
 
 const COPY = {
@@ -134,6 +136,8 @@ export function ChatPanel({
   onOpenExplore,
   onBundleImported,
   onCompareBundles,
+  onCrewLogExported,
+  onCrewLogImported,
 }: ChatPanelProps) {
   const t = COPY[locale];
   const status = useForgeStatus();
@@ -278,7 +282,13 @@ export function ChatPanel({
   }
 
   if (activePanel === "crew") {
-    return <CrewLogPanel locale={locale} />;
+    return (
+      <CrewLogPanel
+        locale={locale}
+        onExported={onCrewLogExported}
+        onImported={onCrewLogImported}
+      />
+    );
   }
 
   if (activePanel === "ledger") {

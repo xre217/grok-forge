@@ -42,7 +42,36 @@ export type CrewActivityKind =
   | "bundle-export"
   | "bundle-import"
   | "session-export"
-  | "session-import";
+  | "session-import"
+  | "crew-log-export"
+  | "crew-log-import";
+
+export type CrewLogBundle = {
+  format: "grok-forge-crew-log";
+  version: "1.0";
+  exportedAt: string;
+  forge: {
+    name: string;
+    version: string;
+    tagline: string;
+  };
+  locale: Locale;
+  entries: CrewActivity[];
+  stats: {
+    total: number;
+    pins: number;
+    explores: number;
+    bundles: number;
+    sessions: number;
+    crewLog: number;
+  };
+  exportScope?: {
+    filter: string;
+    search: string;
+    partial: boolean;
+  };
+  summary: string;
+};
 
 export type CrewActivity = {
   id: string;

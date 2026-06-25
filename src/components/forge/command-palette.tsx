@@ -40,6 +40,8 @@ type CommandPaletteProps = {
   onExportTeamBundle?: () => void;
   onImportTeamBundle?: () => void;
   onCompareTeamBundles?: () => void;
+  onExportCrewLog?: () => void;
+  onImportCrewLog?: () => void;
   locale?: Locale;
 };
 
@@ -52,6 +54,8 @@ export function CommandPalette({
   onExportTeamBundle,
   onImportTeamBundle,
   onCompareTeamBundles,
+  onExportCrewLog,
+  onImportCrewLog,
   locale = "en",
 }: CommandPaletteProps) {
   const [open, setOpen] = useState(false);
@@ -114,6 +118,25 @@ export function CommandPalette({
             <History />
             {locale === "zh" ? "团队日志" : "Crew log"}
             <CommandShortcut>6</CommandShortcut>
+          </CommandItem>
+          <CommandItem
+            onSelect={() => {
+              run(() => onPanelChange?.("crew"));
+              onExportCrewLog?.();
+            }}
+          >
+            <Download />
+            {locale === "zh" ? "导出团队日志" : "Export crew log"}
+            <CommandShortcut>⌘⇧L</CommandShortcut>
+          </CommandItem>
+          <CommandItem
+            onSelect={() => {
+              run(() => onPanelChange?.("crew"));
+              onImportCrewLog?.();
+            }}
+          >
+            <Upload />
+            {locale === "zh" ? "导入团队日志" : "Import crew log"}
           </CommandItem>
           <CommandItem onSelect={() => run(() => onExport?.())}>
             <Download />

@@ -7,6 +7,11 @@ import {
   CREW_ACTIVITY_MAX,
   type CrewActivity,
 } from "@/lib/crew-activity";
+import {
+  applyCrewLogImport,
+  exportAndDownloadCrewLog,
+  readCrewLogFile,
+} from "@/lib/crew-log-bundle";
 import { useCrewActivity } from "@/hooks/use-crew-activity";
 import type { CrewActivityKind, Locale } from "@/types/forge";
 import { cn } from "@/lib/utils";
@@ -14,12 +19,13 @@ import {
   Bookmark,
   Download,
   History,
+  Loader2,
   Search,
   Telescope,
   Upload,
   X,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 type CrewLogFilter = "all" | CrewActivityKind | "bundle" | "session";
 
@@ -43,6 +49,8 @@ const COPY = {
       "bundle-import": "Bundle import",
       "session-export": "Session export",
       "session-import": "Session import",
+      "crew-log-export": "Crew log export",
+      "crew-log-import": "Crew log import",
     },
     kinds: {
       pin: "Pinned",
@@ -51,11 +59,21 @@ const COPY = {
       "bundle-import": "Bundle import",
       "session-export": "Session export",
       "session-import": "Session import",
+      "crew-log-export": "Crew log export",
+      "crew-log-import": "Crew log import",
     },
     justNow: "just now",
     minutesAgo: (n: number) => (n === 1 ? "1m ago" : `${n}m ago`),
     hoursAgo: (n: number) => (n === 1 ? "1h ago" : `${n}h ago`),
     daysAgo: (n: number) => (n === 1 ? "1d ago" : `${n}d ago`),
+    exportLog: "Export log",
+    importLog: "Import log",
+    exported: (n: number) => `${n} events exported`,
+    imported: (merged: number, skipped: number) =>
+      `${merged} merged, ${skipped} skipped`,
+    exportFailed: "Crew log export failed",
+    importFailed: "Crew log import failed",
+    exportFiltered: "Exporting filtered view",
   },
   zh: {
     title: "团队日志",
@@ -76,6 +94,8 @@ const COPY = {
       "bundle-import": "导入团队包",
       "session-export": "导出会话",
       "session-import": "导入会话",
+      "crew-log-export": "导出团队日志",
+      "crew-log-import": "导入团队日志",
     },
     kinds: {
       pin: "已固定",
@@ -84,11 +104,21 @@ const COPY = {
       "bundle-import": "导入团队包",
       "session-export": "导出会话",
       "session-import": "导入会话",
+      "crew-log-export": "导出团队日志",
+      "crew-log-import": "导入团队日志",
     },
     justNow: "刚刚",
     minutesAgo: (n: number) => `${n} 分钟前`,
     hoursAgo: (n: number) => `${n} 小时前`,
     daysAgo: (n: number) => `${n} 天前`,
+    exportLog: "导出日志",
+    importLog: "导入日志",
+    exported: (n: number) => `已导出 ${n} 条`,
+    imported: (merged: number, skipped: number) =>
+      `合并 ${merged} 条，跳过 ${skipped} 条`,
+    exportFailed: "团队日志导出失败",
+    importFailed: "团队日志导入失败",
+    exportFiltered: "导出当前筛选结果",
   },
 } as const;
 
@@ -124,7 +154,10 @@ function ActivityIcon({ kind }: { kind: CrewActivity["kind"] }) {
       return <Download className={cn(className, "text-emerald-300")} />;
     case "bundle-import":
     case "session-import":
+    case "crew-log-import":
       return <Upload className={cn(className, "text-violet-300")} />;
+    case "crew-log-export":
+      return <History className={cn(className, "text-violet-200")} />;
   }
 }
 
@@ -150,11 +183,26 @@ function matchesSearch(activity: CrewActivity, query: string): boolean {
   return haystack.includes(q);
 }
 
-export function CrewLogPanel({ locale }: { locale: Locale }) {
+type CrewLogPanelProps = {
+  locale: Locale;
+  onExported?: (detail: string) => void;
+  onImported?: (detail: string) => void;
+};
+
+export function CrewLogPanel({
+  locale,
+  onExported,
+  onImported,
+}: CrewLogPanelProps) {
   const t = COPY[locale];
+  const importInputRef = useRef<HTMLInputElement>(null);
   const { activities } = useCrewActivity(CREW_ACTIVITY_MAX);
   const [filter, setFilter] = useState<CrewLogFilter>("all");
   const [search, setSearch] = useState("");
+  const [exporting, setExporting] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const filtered = useMemo(
     () =>
@@ -163,6 +211,52 @@ export function CrewLogPanel({ locale }: { locale: Locale }) {
       ),
     [activities, filter, search],
   );
+
+  const exportPartial =
+    filter !== "all" || search.trim().length > 0;
+
+  const handleExport = () => {
+    setExporting(true);
+    setError(null);
+    try {
+      const entries = exportPartial ? filtered : undefined;
+      const result = exportAndDownloadCrewLog(
+        locale,
+        entries,
+        exportPartial
+          ? {
+              filter,
+              search: search.trim(),
+              partial: true,
+            }
+          : undefined,
+      );
+      const detail = t.exported(result.count);
+      setStatus(detail);
+      onExported?.(detail);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : t.exportFailed;
+      setError(message);
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleImport = async (file: File) => {
+    setImporting(true);
+    setError(null);
+    try {
+      const bundle = await readCrewLogFile(file);
+      const result = applyCrewLogImport(bundle);
+      const detail = t.imported(result.merged, result.skipped);
+      setStatus(detail);
+      onImported?.(detail);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.importFailed);
+    } finally {
+      setImporting(false);
+    }
+  };
 
   return (
     <div className="forge-glass flex h-full min-h-0 flex-1 flex-col rounded-2xl">
@@ -218,6 +312,9 @@ export function CrewLogPanel({ locale }: { locale: Locale }) {
 
         <p className="mt-2 text-[10px] text-white/30">
           {t.showing(filtered.length, activities.length)}
+          {exportPartial && activities.length > 0 && (
+            <span className="text-violet-300/60"> · {t.exportFiltered}</span>
+          )}
         </p>
       </div>
 
@@ -261,18 +358,70 @@ export function CrewLogPanel({ locale }: { locale: Locale }) {
         )}
       </ScrollArea>
 
-      {activities.length > 0 && (
-        <div className="flex justify-end border-t border-white/5 px-4 py-3">
+      {(status || error) && (
+        <p
+          className={cn(
+            "border-t border-white/5 px-4 py-2 text-xs",
+            error ? "text-rose-300/85" : "text-violet-200/80",
+          )}
+        >
+          {error ?? status}
+        </p>
+      )}
+
+      <div className="flex flex-wrap justify-end gap-2 border-t border-white/5 px-4 py-3">
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={exporting || importing || activities.length === 0}
+          className="h-7 rounded-full border-white/10 bg-white/5 text-[10px] text-white/60"
+          onClick={handleExport}
+        >
+          {exporting ? (
+            <Loader2 className="size-3 animate-spin" />
+          ) : (
+            <Download className="size-3" />
+          )}
+          {t.exportLog}
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={exporting || importing}
+          className="h-7 rounded-full border-white/10 bg-white/5 text-[10px] text-white/60"
+          onClick={() => importInputRef.current?.click()}
+        >
+          {importing ? (
+            <Loader2 className="size-3 animate-spin" />
+          ) : (
+            <Upload className="size-3" />
+          )}
+          {t.importLog}
+        </Button>
+        {activities.length > 0 && (
           <Button
             size="sm"
             variant="outline"
+            disabled={exporting || importing}
             className="h-7 rounded-full border-white/10 bg-white/5 text-[10px] text-white/50"
             onClick={() => clearCrewActivities()}
           >
             {t.clear}
           </Button>
-        </div>
-      )}
+        )}
+      </div>
+
+      <input
+        ref={importInputRef}
+        type="file"
+        accept="application/json,.json"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) void handleImport(file);
+          e.target.value = "";
+        }}
+      />
     </div>
   );
 }

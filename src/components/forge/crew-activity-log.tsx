@@ -32,6 +32,8 @@ const COPY = {
       "bundle-import": "Bundle import",
       "session-export": "Session export",
       "session-import": "Session import",
+      "crew-log-export": "Crew log export",
+      "crew-log-import": "Crew log import",
     },
   },
   zh: {
@@ -50,6 +52,8 @@ const COPY = {
       "bundle-import": "导入团队包",
       "session-export": "导出会话",
       "session-import": "导入会话",
+      "crew-log-export": "导出团队日志",
+      "crew-log-import": "导入团队日志",
     },
   },
 } as const;
@@ -84,7 +88,10 @@ function ActivityIcon({ kind }: { kind: CrewActivity["kind"] }) {
       return <Download className={cn(className, "text-emerald-300")} />;
     case "bundle-import":
     case "session-import":
+    case "crew-log-import":
       return <Upload className={cn(className, "text-violet-300")} />;
+    case "crew-log-export":
+      return <History className={cn(className, "text-violet-200")} />;
   }
 }
 
