@@ -41,6 +41,7 @@ function buildSummary(bundle: Omit<SessionExportBundle, "summary">): string {
     `Ledger entries in slice: ${bundle.ledger.slice.length}`,
     `Ledger total: ${(bundle.ledger.stats as { total?: number }).total ?? "?"}`,
     `THRML mode: ${(bundle.thrml as { mode?: string } | null)?.mode ?? "n/a"}`,
+    `Consciousness stream: ${bundle.consciousnessStream?.length ?? 0} entries`,
     ``,
     `## Chat`,
     ...bundle.session.messages.map(
@@ -79,9 +80,27 @@ export async function buildSessionExport(
 
   const messages = readStoredMessages();
 
+  const STREAM_TAGS = new Set([
+    "exploration",
+    "consciousness",
+    "cosmos",
+    "universe",
+    "collective",
+    "starship",
+    "team",
+  ]);
+
+  const consciousnessStream = ledgerData.entries.filter((e) => {
+    const entry = e as { type?: string; tags?: string[] };
+    return (
+      entry.type === "exploration" ||
+      entry.tags?.some((t) => STREAM_TAGS.has(t))
+    );
+  });
+
   const base = {
     format: "grok-forge-session" as const,
-    version: "1.0" as const,
+    version: "1.1" as const,
     exportedAt: new Date().toISOString(),
     project: FORGE.project,
     forge: {
@@ -103,6 +122,7 @@ export async function buildSessionExport(
       stats: ledgerData.stats,
       slice: ledgerData.entries,
     },
+    consciousnessStream,
   };
 
   return { ...base, summary: buildSummary(base) };

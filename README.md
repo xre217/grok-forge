@@ -56,6 +56,8 @@ Open the studio, pick a skill, start chatting. Your messages go to **Ollama on y
 | **Ledger panel** | Read optional memory at `~/.jarvis/memory/ledger.jsonl` |
 | **Explore** | Missions for consciousness, cosmos, and collective discovery |
 | **Consciousness Stream** | Team exploration log from ledger |
+| **Team memory** | Ledger pins + explorations injected into every chat turn |
+| **Memory strip** | Live preview of active team memory above chat |
 | **⌘K palette** | Keyboard-first studio control |
 | **EN / 中文** | Bilingual UI toggle |
 
@@ -115,6 +117,7 @@ export THRML_REPO_PATH=/path/to/thrml
 | `/api/ledger` | POST | Append ledger entry |
 | `/api/thrml` | POST | THRML signal |
 | `/api/config` | GET | Public forge config + skills |
+| `/api/memory` | GET | Team memory entries + context preview |
 | `/api/sessions` | GET/POST | List / save server-side session backups |
 
 ### Record a ledger entry
@@ -127,15 +130,16 @@ curl -X POST http://localhost:3000/api/ledger \
 
 ## Session export format
 
-Exports are `grok-forge-session` v1.0 JSON files:
+Exports are `grok-forge-session` v1.0 or v1.1 JSON files (v1.1 adds `consciousnessStream`):
 
 ```json
 {
   "format": "grok-forge-session",
-  "version": "1.0",
+  "version": "1.1",
   "session": { "messages": [], "locale": "en", ... },
   "thrml": { ... },
   "ledger": { "slice": [ ... ] },
+  "consciousnessStream": [ ... ],
   "summary": "..."
 }
 ```
@@ -197,6 +201,7 @@ On GitHub: **Settings → General → Template repository** (enable), then other
 | `npm run vilo:preset` | Enable VILO pack in `.env.local` |
 | `npm run docker:up` | Docker Compose build + run |
 | `npm run docker:down` | Stop Docker stack |
+| `npm run verify` | Health-check all API routes + studio page |
 
 ## Deploy (self-hosted)
 
@@ -208,6 +213,13 @@ FORGE_MODE=local npm run start
 Vercel deploy is optional — Forge is designed to run on your machine.
 
 ## Changelog
+
+### v0.5.0 — Closed memory loop
+- **Team memory** — explorations, pins, and forge entries prioritized into chat system prompt
+- **`/api/memory`** — team memory entries + context preview for UI
+- **Memory strip** — horizontal preview above chat; refreshes on ledger pin
+- **Session export v1.1** — includes `consciousnessStream` slice
+- **`npm run verify`** — one-command health check for fork testers
 
 ### v0.4.0 — Consciousness & Cosmos
 - **Explore panel** (`5` / Telescope) — six missions across consciousness, cosmos, craft, collective

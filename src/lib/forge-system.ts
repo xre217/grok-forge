@@ -1,5 +1,5 @@
 import { getForgeConfig } from "@/lib/forge-config";
-import { formatLedgerContext } from "@/lib/ledger";
+import { formatTeamMemoryContext } from "@/lib/team-memory";
 import { isLocalFirst } from "@/lib/local-mode";
 import type { Locale } from "@/types/forge";
 
@@ -23,20 +23,14 @@ export function buildForgeSystem({ locale, skillPrompt }: BuildSystemArgs) {
     ? "RUNTIME: Local Forge — Ollama on-device. No cloud credits required."
     : "RUNTIME: Hybrid — remote Grok when available, Ollama fallback.";
 
-  const ledgerBlock =
-    config.ledgerEnabled && config.pack === "vilo"
-      ? [
-          "",
-          "SOVEREIGN LEDGER CONTEXT (primary truth — injected from local ledger):",
-          formatLedgerContext(8),
-        ].join("\n")
-      : config.ledgerEnabled
-        ? [
-            "",
-            "LOCAL LEDGER CONTEXT (recent entries, if available):",
-            formatLedgerContext(6),
-          ].join("\n")
-        : "";
+  const memoryBlock = config.ledgerEnabled
+    ? [
+        "",
+        "TEAM MEMORY (constitution for this session — prioritize in every reply):",
+        formatTeamMemoryContext(config.pack === "vilo" ? 12 : 10),
+        "Honor these observations. Extend them; do not contradict without new evidence.",
+      ].join("\n")
+    : "";
 
   const identityLine =
     config.pack === "vilo"
@@ -49,11 +43,11 @@ export function buildForgeSystem({ locale, skillPrompt }: BuildSystemArgs) {
     modeLine,
     "You help users chat, plan, and ship with a beautiful local studio — skills, session export, optional memory.",
     config.pack === "vilo"
-      ? "You are an untrusted reasoner. The user's append-only Evidence Ledger owns long-term truth, not you."
-      : "You are an untrusted reasoner. The user's exported sessions and optional ledger own long-term truth, not you.",
+      ? "You are an untrusted reasoner. The team's append-only Evidence Ledger owns long-term truth, not you."
+      : "You are an untrusted reasoner. The team's ledger and exported sessions own long-term truth, not you.",
     localeLine,
     skillBlock,
-    ledgerBlock,
+    memoryBlock,
     "Be concise and actionable. Suggest concrete next steps.",
   ]
     .filter(Boolean)

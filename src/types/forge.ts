@@ -12,7 +12,7 @@ export type SessionChatMessage = {
 
 export type SessionExportBundle = {
   format: "grok-forge-session";
-  version: "1.0";
+  version: "1.0" | "1.1";
   exportedAt: string;
   project: string;
   forge: {
@@ -34,5 +34,6 @@ export type SessionExportBundle = {
     stats: Record<string, unknown>;
     slice: Array<Record<string, unknown>>;
   };
+  consciousnessStream?: Array<Record<string, unknown>>;
   summary: string;
 };

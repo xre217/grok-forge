@@ -1,6 +1,7 @@
 "use client";
 
 import { ExplorePanel } from "@/components/forge/explore-panel";
+import { TeamMemoryStrip } from "@/components/forge/team-memory-strip";
 import { LedgerPanel } from "@/components/forge/ledger-panel";
 import { LocalHostPanel } from "@/components/forge/local-host-panel";
 import type { ExplorationMission } from "@/lib/explorations";
@@ -303,6 +304,8 @@ export function ChatPanel({
           )}
         </div>
       </div>
+
+      <TeamMemoryStrip locale={locale} />
 
       <ScrollArea className="flex-1 px-4 py-4">
         <div className="flex flex-col gap-4">
