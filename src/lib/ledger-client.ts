@@ -1,3 +1,4 @@
+import { logCrewActivity } from "@/lib/crew-activity";
 import { emitLedgerUpdated } from "@/lib/forge-events";
 
 export async function pinToLedger(claim: string, type = "observation") {
@@ -18,5 +19,6 @@ export async function pinToLedger(claim: string, type = "observation") {
 
   const result = (await res.json()) as { ok: boolean };
   emitLedgerUpdated();
+  logCrewActivity("pin", claim.slice(0, 500));
   return result;
 }

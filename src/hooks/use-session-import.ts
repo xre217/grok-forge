@@ -1,5 +1,6 @@
 "use client";
 
+import { logCrewActivity } from "@/lib/crew-activity";
 import {
   applySessionImport,
   readSessionFile,
@@ -17,6 +18,11 @@ export function useSessionImport() {
     try {
       const bundle = await readSessionFile(file);
       const result = applySessionImport(bundle);
+      logCrewActivity(
+        "session-import",
+        `${result.messageCount} messages`,
+        file.name,
+      );
       return result;
     } catch (err) {
       const message =

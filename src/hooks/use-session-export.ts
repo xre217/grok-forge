@@ -1,5 +1,6 @@
 "use client";
 
+import { logCrewActivity } from "@/lib/crew-activity";
 import {
   backupSessionToDisk,
   buildSessionExport,
@@ -38,6 +39,11 @@ export function useSessionExport({
       const filename = downloadSessionExport(bundle);
       void backupSessionToDisk(bundle);
       setLastExport(filename);
+      logCrewActivity(
+        "session-export",
+        `${bundle.session.messageCount} messages`,
+        filename,
+      );
       return filename;
     } finally {
       setIsExporting(false);

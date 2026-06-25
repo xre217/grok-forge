@@ -82,6 +82,7 @@ npm run verify
 | **Team memory** | Ledger pins + explorations injected into every chat turn |
 | **Team bundles** | Export/import exploration + memory JSON for your crew |
 | **Import preview** | Review missions + new/duplicate entries before merging |
+| **Crew log** | localStorage timeline of pins, explores, imports, exports |
 | **Memory strip** | Live preview of active team memory above chat |
 | **First-run checklist** | Three-step onboarding to activate the memory loop |
 | **Memory citations** | Shows which ledger entries shaped each reply (chips + hover) |
@@ -241,6 +242,11 @@ FORGE_MODE=local npm run start
 Vercel deploy is optional — Forge is designed to run on your machine.
 
 ## Changelog
+
+### v0.11.0 — Crew activity log
+- **Crew log** — collapsible studio timeline (pins, explores, bundle + session I/O)
+- **localStorage** — persists last 64 crew events on your machine
+- **Auto-logging** — pin, Explore distill, team bundle export/import, session export/import
 
 ### v0.10.0 — Bundle import preview
 - **Import preview modal** — see team, missions, and entries before merge

@@ -1,5 +1,6 @@
 "use client";
 
+import { logCrewActivity } from "@/lib/crew-activity";
 import { emitLedgerUpdated } from "@/lib/forge-events";
 import {
   buildBundleImportPreview,
@@ -46,6 +47,11 @@ export function useTeamBundle(locale: Locale) {
         );
       }
       const filename = downloadTeamBundle(bundle);
+      logCrewActivity(
+        "bundle-export",
+        `${bundle.stats.total} entries`,
+        filename,
+      );
       return { filename, count: bundle.stats.total };
     } catch (err) {
       const message =
@@ -76,6 +82,11 @@ export function useTeamBundle(locale: Locale) {
       }
 
       emitLedgerUpdated();
+      logCrewActivity(
+        "bundle-import",
+        `${data.imported} imported, ${data.skipped} skipped`,
+        data.team,
+      );
       return data;
     } catch (err) {
       const message =

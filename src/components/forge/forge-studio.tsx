@@ -6,6 +6,7 @@ import { ExportToast } from "@/components/forge/export-toast";
 import { ForgeOnboarding } from "@/components/forge/forge-onboarding";
 import { GoldParticleCanvas } from "@/components/forge/gold-particle-canvas";
 import { SkillsRail } from "@/components/forge/skills-rail";
+import { CrewActivityLog } from "@/components/forge/crew-activity-log";
 import { ThrmlSignalBar } from "@/components/forge/thrml-signal-bar";
 import { Button } from "@/components/ui/button";
 import { RuntimeStatusChip } from "@/components/forge/runtime-status-chip";
@@ -298,6 +299,7 @@ export function ForgeStudio() {
           locale={locale}
           onOpenExplore={() => setActivePanel("explore")}
         />
+        <CrewActivityLog locale={locale} />
         <ThrmlSignalBar
           signal={thrmlSignal}
           loading={thrmlLoading}

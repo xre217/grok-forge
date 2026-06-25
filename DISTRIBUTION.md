@@ -13,8 +13,8 @@ New users: **Use this template** → clone their copy.
 ## 2. Pin the release (1 min)
 
 1. **Releases** → **Draft a new release**
-2. Choose tag `v0.10.0` (or latest)
-3. Title: `v0.10.x — Bundle import preview & local studio`
+2. Choose tag `v0.11.0` (or latest)
+3. Title: `v0.11.x — Crew log & local studio`
 4. Paste changelog from README
 5. Publish
 

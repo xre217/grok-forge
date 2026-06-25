@@ -3,6 +3,7 @@
 import { ConsciousnessStream } from "@/components/forge/consciousness-stream";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { logCrewActivity } from "@/lib/crew-activity";
 import { emitLedgerUpdated } from "@/lib/forge-events";
 import {
   DOMAIN_META,
@@ -125,6 +126,11 @@ export function ExplorePanel({
       setLastObservation(data.observation);
       setReflection("");
       emitLedgerUpdated();
+      logCrewActivity(
+        "explore",
+        locale === "zh" ? activeMission.titleZh : activeMission.title,
+        data.observation,
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : t.failed);
     } finally {
