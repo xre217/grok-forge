@@ -148,7 +148,7 @@ npm run verify http://localhost:3847
 1. **Open studio** → send a message (Ollama replies locally)
 2. **Pin a reply** → bookmark icon on an assistant message
 3. **Watch memory strip** → pinned entry appears above chat
-4. **Send another message** → reply shows `N memories active`
+4. **Send another message** → reply shows **Shaped by (N)** chips — hover for full claim text
 5. **Open Explore** (panel `5`) → log a mission reflection
 6. **Export** (`⌘⇧E`) → download JSON session bundle
 
@@ -189,6 +189,7 @@ Bundle includes: exploration observations, pinned replies, mission groupings.
 | `FORGE_PORT` | `3847` | Production / Docker port |
 | `FORGE_LEDGER_ENABLED` | `1` | Set `0` to disable ledger |
 | `FORGE_USER_NAME` | `you` | Shown in system prompt |
+| `FORGE_TEAM_NAME` | `Forge Crew` | Label on team bundle exports |
 
 Copy `.env.example` → `.env.local` for local dev. Docker reads from `docker-compose.yml` + host env.
 

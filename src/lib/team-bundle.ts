@@ -91,11 +91,26 @@ function buildBundleSummary(bundle: Omit<TeamBundle, "summary">): string {
   return lines.join("\n");
 }
 
-export async function buildTeamBundle(locale: Locale): Promise<TeamBundle> {
-  const res = await fetch("/api/ledger?limit=100");
+export async function buildTeamBundle(
+  locale: Locale,
+  teamLabel?: string,
+): Promise<TeamBundle> {
+  const [res, configRes] = await Promise.all([
+    fetch("/api/ledger?limit=100"),
+    fetch("/api/config"),
+  ]);
   const data = res.ok
     ? ((await res.json()) as { entries: Array<Record<string, unknown>> })
     : { entries: [] };
+
+  const config = configRes.ok
+    ? ((await configRes.json()) as { teamName?: string; project?: string })
+    : null;
+  const teamLabelResolved =
+    teamLabel?.trim() ||
+    config?.teamName ||
+    config?.project ||
+    FORGE.project;
 
   const memory = data.entries
     .filter(isTeamBundleEntry)
@@ -115,7 +130,7 @@ export async function buildTeamBundle(locale: Locale): Promise<TeamBundle> {
       tagline: FORGE.tagline,
     },
     team: {
-      label: FORGE.project,
+      label: teamLabelResolved,
       locale,
     },
     memory: { entries: memory },

@@ -1,7 +1,7 @@
 export const FORGE = {
   name: "Grok Forge",
   tagline: "Your local AI studio — chat, remember, explore, export.",
-  version: "0.8.1",
+  version: "0.9.0",
   project: "Local AI Studio",
 } as const;
 
@@ -56,7 +56,7 @@ export const FORGE_FEATURES = [
     icon: "brain" as const,
     title: "Team Memory",
     description:
-      "Pin replies and log explorations. Active memory injects into every new chat turn.",
+      "Pin replies and log explorations. Citations show which entries shaped each reply.",
   },
   {
     icon: "telescope" as const,

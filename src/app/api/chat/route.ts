@@ -1,5 +1,9 @@
 import { buildForgeSystem, renderChatHistory } from "@/lib/forge-system";
-import { getTeamMemoryEntries } from "@/lib/team-memory";
+import { getForgeConfig } from "@/lib/forge-config";
+import {
+  getTeamMemoryCitations,
+  getTeamMemoryLimit,
+} from "@/lib/team-memory";
 import { formatReasoningError, generateWithFallback } from "@/lib/reasoning";
 import type { Locale } from "@/types/forge";
 import { NextResponse } from "next/server";
@@ -41,6 +45,12 @@ export async function POST(request: Request) {
       "Respond to the latest USER message.",
     ].join("\n");
 
+    const config = getForgeConfig();
+    const memoryLimit = getTeamMemoryLimit(config.pack);
+    const memoryUsed = config.ledgerEnabled
+      ? getTeamMemoryCitations(memoryLimit)
+      : [];
+
     const result = await generateWithFallback({
       system,
       prompt,
@@ -53,7 +63,8 @@ export async function POST(request: Request) {
       provider: result.provider,
       fallback: result.fallback ?? false,
       grokConfigured: Boolean(process.env.XAI_API_KEY?.trim()),
-      memoryInjected: getTeamMemoryEntries(12).length,
+      memoryInjected: memoryUsed.length,
+      memoryUsed,
     });
   } catch (error) {
     return NextResponse.json(

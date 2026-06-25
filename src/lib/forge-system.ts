@@ -1,5 +1,8 @@
 import { getForgeConfig } from "@/lib/forge-config";
-import { formatTeamMemoryContext } from "@/lib/team-memory";
+import {
+  formatTeamMemoryContext,
+  getTeamMemoryLimit,
+} from "@/lib/team-memory";
 import { isLocalFirst } from "@/lib/local-mode";
 import type { Locale } from "@/types/forge";
 
@@ -27,7 +30,7 @@ export function buildForgeSystem({ locale, skillPrompt }: BuildSystemArgs) {
     ? [
         "",
         "TEAM MEMORY (constitution for this session — prioritize in every reply):",
-        formatTeamMemoryContext(config.pack === "vilo" ? 12 : 10),
+        formatTeamMemoryContext(getTeamMemoryLimit(config.pack)),
         "Honor these observations. Extend them; do not contradict without new evidence.",
       ].join("\n")
     : "";

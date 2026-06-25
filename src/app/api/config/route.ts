@@ -16,6 +16,8 @@ export async function GET() {
       project: config.project,
       githubUrl: config.githubUrl,
     },
+    teamName: config.teamName,
+    project: config.project,
     pack: config.pack,
     ledgerEnabled: config.ledgerEnabled,
     skills: getStudioSkills(config.pack).map((s) => ({

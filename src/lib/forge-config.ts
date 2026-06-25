@@ -24,6 +24,10 @@ export function getForgeConfig() {
     project:
       process.env.FORGE_PROJECT?.trim() ||
       (pack === "vilo" ? "VILO v1.1" : "Grok Forge"),
+    teamName:
+      process.env.FORGE_TEAM_NAME?.trim() ||
+      process.env.FORGE_PROJECT?.trim() ||
+      "Forge Crew",
     ledgerEnabled: process.env.FORGE_LEDGER_ENABLED !== "0",
     thrmlRepoPath: process.env.THRML_REPO_PATH?.trim() || "",
     jarvisHome,

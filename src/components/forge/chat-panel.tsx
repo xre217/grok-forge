@@ -10,12 +10,14 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { EngineBadge } from "@/components/forge/engine-badge";
+import { MemoryCitationChips } from "@/components/forge/memory-citation-chips";
 import { RuntimeStatusChip } from "@/components/forge/runtime-status-chip";
 import { useForgeChat } from "@/hooks/use-forge-chat";
 import { useForgeModel } from "@/hooks/use-forge-model";
 import { useForgeStatus } from "@/hooks/use-forge-status";
 import { emitChatSent } from "@/lib/forge-events";
 import { pinToLedger } from "@/lib/ledger-client";
+import type { MemoryCitation } from "@/lib/team-memory";
 import type { Locale, StudioPanel } from "@/types/forge";
 import { cn } from "@/lib/utils";
 import { Bookmark, Loader2, Send, Sparkles } from "lucide-react";
@@ -26,6 +28,7 @@ export type ChatMessage = {
   role: "user" | "assistant";
   content: string;
   memoryInjected?: number;
+  memoryUsed?: MemoryCitation[];
   engine?: {
     provider: "xai" | "ollama";
     model: string;
@@ -220,6 +223,7 @@ export function ChatPanel({
         provider?: string;
         model?: string;
         memoryInjected?: number;
+        memoryUsed?: MemoryCitation[];
         fallback?: boolean;
       };
 
@@ -236,6 +240,7 @@ export function ChatPanel({
           role: "assistant",
           content: reply,
           memoryInjected: data.memoryInjected,
+          memoryUsed: data.memoryUsed,
           engine:
             provider && data.model
               ? {
@@ -378,6 +383,15 @@ export function ChatPanel({
                 />
               )}
               {msg.role === "assistant" &&
+                msg.memoryUsed &&
+                msg.memoryUsed.length > 0 && (
+                  <MemoryCitationChips
+                    citations={msg.memoryUsed}
+                    locale={locale}
+                  />
+                )}
+              {msg.role === "assistant" &&
+                (!msg.memoryUsed || msg.memoryUsed.length === 0) &&
                 msg.memoryInjected != null &&
                 msg.memoryInjected > 0 && (
                   <span className="mt-1.5 block text-[9px] font-medium uppercase tracking-wider text-violet-300/55">

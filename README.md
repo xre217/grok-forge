@@ -83,7 +83,7 @@ npm run verify
 | **Team bundles** | Export/import exploration + memory JSON for your crew |
 | **Memory strip** | Live preview of active team memory above chat |
 | **First-run checklist** | Three-step onboarding to activate the memory loop |
-| **Memory badge** | Shows how many memories shaped each reply |
+| **Memory citations** | Shows which ledger entries shaped each reply (chips + hover) |
 | **⌘K palette** | Keyboard-first studio control |
 | **EN / 中文** | Bilingual UI toggle |
 
@@ -95,6 +95,7 @@ Copy `.env.example` to `.env.local` and customize:
 |----------|---------|---------|
 | `FORGE_MODE` | `local` | `local` \| `hybrid` \| `cloud` |
 | `FORGE_USER_NAME` | `you` | Name used in system prompt |
+| `FORGE_TEAM_NAME` | `Forge Crew` | Label on team bundle exports |
 | `FORGE_PERSONA` | (built-in) | Custom co-pilot personality |
 | `OLLAMA_MODEL` | `llama3.2:3b` | Local reasoner model |
 | `FORGE_LEDGER_ENABLED` | `1` | Enable ledger read/write |
@@ -239,6 +240,12 @@ FORGE_MODE=local npm run start
 Vercel deploy is optional — Forge is designed to run on your machine.
 
 ## Changelog
+
+### v0.9.0 — Memory citations
+- **Memory citations** — assistant replies show which ledger entries shaped the answer (type, tags, claim preview)
+- **`memoryUsed` in `/api/chat`** — returns citation array alongside `memoryInjected` count
+- **`FORGE_TEAM_NAME`** — crew label for team bundle exports (falls back to `FORGE_PROJECT`)
+- **`/api/config`** — exposes `teamName` for bundle export UI
 
 ### v0.8.1 — Distribution & crew shortcuts
 - **`DISTRIBUTION.md`** — template repo, GIF, release, blind fork checklist

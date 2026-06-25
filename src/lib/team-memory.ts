@@ -41,6 +41,26 @@ function memoryScore(entry: LedgerEntry, index: number, total: number): number {
   return score;
 }
 
+export type MemoryCitation = {
+  id: string;
+  type: string;
+  claim: string;
+  tags: string[];
+};
+
+export function getTeamMemoryLimit(pack: "default" | "vilo" = "default"): number {
+  return pack === "vilo" ? 12 : 10;
+}
+
+export function getTeamMemoryCitations(limit = 10): MemoryCitation[] {
+  return getTeamMemoryEntries(limit).map((entry) => ({
+    id: entry.id,
+    type: entry.type,
+    claim: entry.claim,
+    tags: entry.tags ?? [],
+  }));
+}
+
 export function getTeamMemoryEntries(limit = 10): LedgerEntry[] {
   const all = readAllEntries();
   if (!all.length) return [];

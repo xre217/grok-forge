@@ -13,8 +13,8 @@ New users: **Use this template** → clone their copy.
 ## 2. Pin the release (1 min)
 
 1. **Releases** → **Draft a new release**
-2. Choose tag `v0.8.1` (or latest)
-3. Title: `v0.8.x — Team bundles & local studio`
+2. Choose tag `v0.9.0` (or latest)
+3. Title: `v0.9.x — Memory citations & local studio`
 4. Paste changelog from README
 5. Publish
 
