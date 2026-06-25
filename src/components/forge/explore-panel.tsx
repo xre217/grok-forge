@@ -12,13 +12,15 @@ import {
 import type { ThrmlSignal } from "@/lib/thrml";
 import type { Locale } from "@/types/forge";
 import { cn } from "@/lib/utils";
-import { Loader2, Rocket, Sparkles, Telescope } from "lucide-react";
-import { useState } from "react";
+import { useTeamBundle } from "@/hooks/use-team-bundle";
+import { Download, Loader2, Rocket, Sparkles, Telescope, Upload } from "lucide-react";
+import { useRef, useState } from "react";
 
 type ExplorePanelProps = {
   locale: Locale;
   thrml?: ThrmlSignal | null;
   onDiscuss?: (mission: ExplorationMission, seed: string) => void;
+  onBundleImported?: (detail: string) => void;
   model?: string;
 };
 
@@ -34,6 +36,12 @@ const COPY = {
     logged: "Logged to consciousness stream",
     failed: "Exploration failed — is Ollama running?",
     explorationHigh: "THRML signals high exploration — good time to voyage.",
+    teamBundle: "Team bundle",
+    exportBundle: "Export bundle",
+    importBundle: "Import bundle",
+    bundleHint: "Share explorations + pinned memory with your crew (JSON).",
+    bundleExported: "Team bundle exported",
+    bundleImported: "Team bundle imported",
   },
   zh: {
     title: "探索",
@@ -45,6 +53,12 @@ const COPY = {
     logged: "已写入意识之流",
     failed: "探索失败——Ollama 是否在运行？",
     explorationHigh: "THRML 探索信号偏高——适合启航。",
+    teamBundle: "团队包",
+    exportBundle: "导出团队包",
+    importBundle: "导入团队包",
+    bundleHint: "与队友分享探索记录与固定记忆（JSON）。",
+    bundleExported: "团队包已导出",
+    bundleImported: "团队包已导入",
   },
 } as const;
 
@@ -52,9 +66,17 @@ export function ExplorePanel({
   locale,
   thrml,
   onDiscuss,
+  onBundleImported,
   model,
 }: ExplorePanelProps) {
   const t = COPY[locale];
+  const bundleInputRef = useRef<HTMLInputElement>(null);
+  const {
+    exportBundle,
+    importBundle,
+    isExporting: bundleExporting,
+    isImporting: bundleImporting,
+  } = useTeamBundle(locale);
   const [activeMission, setActiveMission] = useState<ExplorationMission>(
     EXPLORATION_MISSIONS[0],
   );
@@ -62,6 +84,7 @@ export function ExplorePanel({
   const [loading, setLoading] = useState(false);
   const [lastObservation, setLastObservation] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [bundleToast, setBundleToast] = useState<string | null>(null);
 
   const explorationHigh =
     (thrml?.scores.exploration ?? 0) > 0.55 ||
@@ -126,6 +149,71 @@ export function ExplorePanel({
             </span>
           </p>
         )}
+        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-white/5 pt-3">
+          <span className="text-[10px] font-medium uppercase tracking-wider text-white/35">
+            {t.teamBundle}
+          </span>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={bundleExporting}
+            className="h-7 rounded-full border-white/10 bg-white/5 text-[10px] text-white/70"
+            onClick={() =>
+              void exportBundle()
+                .then((r) => {
+                  if (r) {
+                    setBundleToast(`${t.bundleExported}: ${r.count} entries`);
+                    onBundleImported?.(`${r.count} entries exported`);
+                  }
+                })
+                .catch((err) =>
+                  setError(err instanceof Error ? err.message : t.failed),
+                )
+            }
+          >
+            {bundleExporting ? (
+              <Loader2 className="size-3 animate-spin" />
+            ) : (
+              <Download className="size-3" />
+            )}
+            {t.exportBundle}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={bundleImporting}
+            className="h-7 rounded-full border-white/10 bg-white/5 text-[10px] text-white/70"
+            onClick={() => bundleInputRef.current?.click()}
+          >
+            {bundleImporting ? (
+              <Loader2 className="size-3 animate-spin" />
+            ) : (
+              <Upload className="size-3" />
+            )}
+            {t.importBundle}
+          </Button>
+          <span className="text-[10px] text-white/25">{t.bundleHint}</span>
+        </div>
+        <input
+          ref={bundleInputRef}
+          type="file"
+          accept="application/json,.json"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            void importBundle(file)
+              .then((r) => {
+                const detail = `${r.imported} imported, ${r.skipped} skipped`;
+                setBundleToast(`${t.bundleImported}: ${detail}`);
+                onBundleImported?.(detail);
+              })
+              .catch((err) =>
+                setError(err instanceof Error ? err.message : t.failed),
+              );
+            e.target.value = "";
+          }}
+        />
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-5">
@@ -181,6 +269,10 @@ export function ExplorePanel({
           <div className="rounded-xl border border-emerald-400/20 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-100/85">
             <span className="font-medium">{t.logged}:</span> {lastObservation}
           </div>
+        )}
+
+        {bundleToast && (
+          <p className="text-xs text-sky-200/80">{bundleToast}</p>
         )}
 
         {error && (

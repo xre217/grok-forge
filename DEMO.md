@@ -160,6 +160,19 @@ Onboarding checklist at the top guides new users through steps 1–3.
 
 Forge is local-first. To share context:
 
+### Team bundles (explorations + memory)
+
+Best for **crew explorations** without sharing full chat history:
+
+1. **Explore panel** → **Export bundle** (or studio **Import** accepts bundles too)
+2. Send `grok-forge-team-bundle-*.json` to a teammate
+3. They **Import bundle** in Explore — entries merge into ledger (deduped by id)
+4. Memory strip + chat injection pick up imported pins and explorations
+
+Bundle includes: exploration observations, pinned replies, mission groupings.
+
+### Full sessions (chat + everything)
+
 1. **Export session** — `⌘⇧E` downloads `grok-forge-session-*.json`
 2. **Teammate imports** — `⌘⇧I` or Import button in studio
 3. **Ledger** — optional shared memory at `~/.jarvis/memory/ledger.jsonl` (same machine or sync the file)

@@ -103,3 +103,65 @@ export function appendLedgerEntry(
   fs.appendFileSync(LEDGER_FILE, `${JSON.stringify(entry)}\n`, "utf8");
   return entry;
 }
+
+function readAllLedgerEntries(): LedgerEntry[] {
+  if (!fs.existsSync(LEDGER_FILE)) return [];
+  const raw = fs.readFileSync(LEDGER_FILE, "utf8").trim();
+  if (!raw) return [];
+
+  const entries: LedgerEntry[] = [];
+  for (const line of raw.split("\n")) {
+    if (!line.trim()) continue;
+    try {
+      entries.push(JSON.parse(line) as LedgerEntry);
+    } catch {
+      // skip malformed
+    }
+  }
+  return entries;
+}
+
+export function importLedgerEntries(
+  incoming: LedgerEntry[],
+): { imported: number; skipped: number; entries: LedgerEntry[] } {
+  if (!isLedgerWritable()) {
+    throw new Error("Ledger writes disabled (FORGE_LEDGER_ENABLED=0)");
+  }
+
+  const dir = path.dirname(LEDGER_FILE);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+
+  const existingIds = new Set(readAllLedgerEntries().map((e) => e.id));
+  const imported: LedgerEntry[] = [];
+  let skipped = 0;
+
+  for (const entry of incoming) {
+    if (!entry.id?.trim() || !entry.claim?.trim() || !entry.type?.trim()) {
+      skipped += 1;
+      continue;
+    }
+    if (existingIds.has(entry.id)) {
+      skipped += 1;
+      continue;
+    }
+
+    const normalized: LedgerEntry = {
+      id: entry.id,
+      ts: entry.ts || new Date().toISOString(),
+      type: entry.type,
+      claim: entry.claim,
+      evidence: entry.evidence,
+      confidence: entry.confidence,
+      tags: [...(entry.tags ?? []), "team-bundle"],
+      source: entry.source ?? "grok-forge-team-bundle",
+    };
+
+    fs.appendFileSync(LEDGER_FILE, `${JSON.stringify(normalized)}\n`, "utf8");
+    existingIds.add(normalized.id);
+    imported.push(normalized);
+  }
+
+  return { imported: imported.length, skipped, entries: imported };
+}

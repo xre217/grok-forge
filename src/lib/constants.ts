@@ -1,7 +1,7 @@
 export const FORGE = {
   name: "Grok Forge",
   tagline: "Your local AI studio — chat, remember, explore, export.",
-  version: "0.7.0",
+  version: "0.8.0",
   project: "Local AI Studio",
 } as const;
 

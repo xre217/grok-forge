@@ -46,6 +46,7 @@ type ChatPanelProps = {
   onSend?: (message: string) => void;
   onResetChat?: () => void;
   onOpenExplore?: () => void;
+  onBundleImported?: (detail: string) => void;
 };
 
 const COPY = {
@@ -126,6 +127,7 @@ export function ChatPanel({
   onSend,
   onResetChat,
   onOpenExplore,
+  onBundleImported,
 }: ChatPanelProps) {
   const t = COPY[locale];
   const status = useForgeStatus();
@@ -261,6 +263,7 @@ export function ChatPanel({
         thrml={thrmlSignal}
         model={model}
         onDiscuss={onExploreDiscuss}
+        onBundleImported={onBundleImported}
       />
     );
   }

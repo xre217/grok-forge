@@ -63,11 +63,9 @@ export async function POST(request: Request) {
         claim: result.text.trim(),
         evidence: reflection.slice(0, 800),
         confidence: 0.72,
-        tags: [
-          "exploration",
-          "consciousness",
-          ...(mission?.tags ?? ["cosmos"]),
-        ],
+        tags: mission
+          ? [`mission:${mission.id}`, ...mission.tags]
+          : ["exploration", "consciousness", "cosmos"],
         source: "grok-forge-explore",
       });
     }

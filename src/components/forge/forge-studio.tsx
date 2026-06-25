@@ -12,6 +12,8 @@ import { RuntimeStatusChip } from "@/components/forge/runtime-status-chip";
 import { useForgeStatus } from "@/hooks/use-forge-status";
 import { useSessionExport } from "@/hooks/use-session-export";
 import { useSessionImport } from "@/hooks/use-session-import";
+import { readTeamBundleFile } from "@/lib/team-bundle";
+import { emitLedgerUpdated } from "@/lib/forge-events";
 import { useThrmlSignal } from "@/hooks/use-thrml-signal";
 import { FORGE, ROUTES } from "@/lib/constants";
 import { getClientForgePack } from "@/lib/forge-pack";
@@ -102,7 +104,49 @@ export function ForgeStudio() {
   const handleImportPick = useCallback(
     async (file: File) => {
       try {
-        const result = await importSession(file);
+        const peek = await file.text();
+        let parsed: unknown;
+        try {
+          parsed = JSON.parse(peek);
+        } catch {
+          throw new Error(
+            locale === "zh" ? "无效的 JSON 文件" : "Invalid JSON file",
+          );
+        }
+
+        if (
+          typeof parsed === "object" &&
+          parsed !== null &&
+          (parsed as { format?: string }).format === "grok-forge-team-bundle"
+        ) {
+          const bundle = await readTeamBundleFile(
+            new File([peek], file.name, { type: file.type }),
+          );
+          const res = await fetch("/api/team-bundle/import", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ bundle }),
+          });
+          const data = (await res.json()) as {
+            imported?: number;
+            skipped?: number;
+            error?: string;
+          };
+          if (!res.ok) {
+            throw new Error(data.error ?? "Team bundle import failed");
+          }
+          emitLedgerUpdated();
+          setActivePanel("explore");
+          setToast({
+            title: locale === "zh" ? "团队包已导入" : "Team bundle imported",
+            detail: `${data.imported ?? 0} entries (${data.skipped ?? 0} skipped)`,
+          });
+          return;
+        }
+
+        const result = await importSession(
+          new File([peek], file.name, { type: file.type }),
+        );
         setLocale(result.locale);
         setActiveSkill(result.activeSkill);
         setActivePanel(result.activePanel);
@@ -279,6 +323,12 @@ export function ForgeStudio() {
             onSend={handleChatSend}
             onResetChat={newChat}
             onOpenExplore={() => setActivePanel("explore")}
+            onBundleImported={(detail) =>
+              setToast({
+                title: locale === "zh" ? "团队包" : "Team bundle",
+                detail,
+              })
+            }
           />
         </div>
       </div>

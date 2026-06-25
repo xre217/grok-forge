@@ -78,6 +78,7 @@ npm run verify
 | **Explore** | Missions for consciousness, cosmos, and collective discovery |
 | **Consciousness Stream** | Team exploration log from ledger |
 | **Team memory** | Ledger pins + explorations injected into every chat turn |
+| **Team bundles** | Export/import exploration + memory JSON for your crew |
 | **Memory strip** | Live preview of active team memory above chat |
 | **First-run checklist** | Three-step onboarding to activate the memory loop |
 | **Memory badge** | Shows how many memories shaped each reply |
@@ -138,6 +139,7 @@ export THRML_REPO_PATH=/path/to/thrml
 | `/api/thrml` | POST | THRML signal |
 | `/api/config` | GET | Public forge config + skills |
 | `/api/memory` | GET | Team memory entries + context preview |
+| `/api/team-bundle/import` | POST | Merge team bundle into ledger |
 | `/api/sessions` | GET/POST | List / save server-side session backups |
 
 ### Record a ledger entry
@@ -234,6 +236,11 @@ FORGE_MODE=local npm run start
 Vercel deploy is optional — Forge is designed to run on your machine.
 
 ## Changelog
+
+### v0.8.0 — Team bundles
+- **Team bundle export** — explorations, pins, mission slices as `grok-forge-team-bundle` JSON
+- **Team bundle import** — merge into ledger (dedupe by id); Explore panel + studio Import
+- **Mission tags** — `mission:{id}` on explore log entries for bundle grouping
 
 ### v0.7.0 — Engine clarity
 - **Runtime chips** — `LOCAL` / `HYBRID` / `GROK` / `OFFLINE` in studio + chat headers

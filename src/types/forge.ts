@@ -10,6 +10,51 @@ export type SessionChatMessage = {
   content: string;
 };
 
+export type TeamBundleEntry = {
+  id: string;
+  ts: string;
+  type: string;
+  claim: string;
+  evidence?: string;
+  confidence?: number;
+  tags?: string[];
+  source?: string;
+};
+
+export type TeamBundleMissionSlice = {
+  missionId: string;
+  title: string;
+  titleZh: string;
+  domain: string;
+  entryCount: number;
+  entries: TeamBundleEntry[];
+};
+
+export type TeamBundle = {
+  format: "grok-forge-team-bundle";
+  version: "1.0";
+  exportedAt: string;
+  forge: {
+    name: string;
+    version: string;
+    tagline: string;
+  };
+  team: {
+    label: string;
+    locale: Locale;
+  };
+  memory: {
+    entries: TeamBundleEntry[];
+  };
+  missions: TeamBundleMissionSlice[];
+  stats: {
+    explorations: number;
+    pinned: number;
+    total: number;
+  };
+  summary: string;
+};
+
 export type SessionExportBundle = {
   format: "grok-forge-session";
   version: "1.0" | "1.1";
