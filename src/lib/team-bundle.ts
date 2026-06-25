@@ -563,6 +563,30 @@ function compareBundleCrew(
   return { onlyInA, onlyInB, unchanged, summaryChanged };
 }
 
+/** Suggest which bundle to import after compare (ledger new count, uniqueness, recency) */
+export function suggestCompareImportSide(
+  compare: TeamBundleCompare,
+  bundleA: TeamBundle,
+  bundleB: TeamBundle,
+  previewA?: BundleImportPreview | null,
+  previewB?: BundleImportPreview | null,
+): "A" | "B" | null {
+  const newA = previewA?.stats.new ?? 0;
+  const newB = previewB?.stats.new ?? 0;
+  if (newA > newB) return "A";
+  if (newB > newA) return "B";
+
+  if (compare.stats.onlyInA > compare.stats.onlyInB) return "A";
+  if (compare.stats.onlyInB > compare.stats.onlyInA) return "B";
+
+  const dateA = new Date(bundleA.exportedAt).getTime();
+  const dateB = new Date(bundleB.exportedAt).getTime();
+  if (dateA > dateB) return "A";
+  if (dateB > dateA) return "B";
+
+  return null;
+}
+
 /** Compare two team bundles — memory by id, optional crew log diff */
 export function compareTeamBundles(
   a: TeamBundle,

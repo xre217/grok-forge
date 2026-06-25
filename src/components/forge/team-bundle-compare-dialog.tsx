@@ -11,10 +11,14 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
+  buildBundleImportPreview,
   compareTeamBundles,
+  fetchLedgerEntryMap,
   readTeamBundleFile,
+  suggestCompareImportSide,
   type BundleCrewCompareRow,
   type BundleCrewConflictRow,
+  type BundleImportPreview,
   type BundleMemoryCompareRow,
   type BundleMemoryConflictRow,
   type TeamBundleCompare,
@@ -63,6 +67,13 @@ const COPY = {
     pickBoth: "Choose both bundles to compare.",
     invalidFile: "Invalid team bundle file.",
     loading: "Reading bundle…",
+    importA: "Import A",
+    importB: "Import B",
+    importNew: (n: number) => (n === 1 ? "1 new vs ledger" : `${n} new vs ledger`),
+    importNothingNew: "nothing new vs ledger",
+    suggested: "Suggested",
+    importHint: "Opens import preview vs your ledger before merge.",
+    staging: "Preparing import…",
   },
   zh: {
     title: "对比团队包",
@@ -101,6 +112,13 @@ const COPY = {
     pickBoth: "请选择两个团队包进行对比。",
     invalidFile: "无效的团队包文件。",
     loading: "读取中…",
+    importA: "导入 A",
+    importB: "导入 B",
+    importNew: (n: number) => `账本新增 ${n} 条`,
+    importNothingNew: "账本无新增",
+    suggested: "推荐",
+    importHint: "将打开与账本的导入预览后再合并。",
+    staging: "准备导入…",
   },
 } as const;
 
@@ -110,6 +128,8 @@ type TeamBundleCompareDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   locale: Locale;
+  onImportPick?: (bundle: TeamBundle, side: "A" | "B") => void | Promise<void>;
+  stagingImport?: boolean;
 };
 
 function formatExportedAt(iso: string, locale: Locale): string {
@@ -127,6 +147,8 @@ export function TeamBundleCompareDialog({
   open,
   onOpenChange,
   locale,
+  onImportPick,
+  stagingImport = false,
 }: TeamBundleCompareDialogProps) {
   const t = COPY[locale];
   const inputARef = useRef<HTMLInputElement>(null);
@@ -137,6 +159,9 @@ export function TeamBundleCompareDialog({
   const [tab, setTab] = useState<CompareTab>("overview");
   const [loadingSide, setLoadingSide] = useState<"A" | "B" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [previewA, setPreviewA] = useState<BundleImportPreview | null>(null);
+  const [previewB, setPreviewB] = useState<BundleImportPreview | null>(null);
+  const [loadingPreviews, setLoadingPreviews] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -149,7 +174,36 @@ export function TeamBundleCompareDialog({
       setCompare(compareTeamBundles(bundleA, bundleB));
     } else {
       setCompare(null);
+      setPreviewA(null);
+      setPreviewB(null);
     }
+  }, [bundleA, bundleB]);
+
+  useEffect(() => {
+    if (!bundleA || !bundleB) return;
+
+    let cancelled = false;
+    setLoadingPreviews(true);
+
+    void fetchLedgerEntryMap()
+      .then((map) => {
+        if (cancelled) return;
+        setPreviewA(buildBundleImportPreview(bundleA, map));
+        setPreviewB(buildBundleImportPreview(bundleB, map));
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setPreviewA(null);
+          setPreviewB(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingPreviews(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [bundleA, bundleB]);
 
   const reset = () => {
@@ -159,6 +213,20 @@ export function TeamBundleCompareDialog({
     setTab("overview");
     setError(null);
     setLoadingSide(null);
+    setPreviewA(null);
+    setPreviewB(null);
+    setLoadingPreviews(false);
+  };
+
+  const suggested =
+    compare && bundleA && bundleB
+      ? suggestCompareImportSide(compare, bundleA, bundleB, previewA, previewB)
+      : null;
+
+  const handleImport = (side: "A" | "B") => {
+    const bundle = side === "A" ? bundleA : bundleB;
+    if (!bundle || !onImportPick) return;
+    void onImportPick(bundle, side);
   };
 
   const handleFile = async (side: "A" | "B", file: File) => {
@@ -303,12 +371,30 @@ export function TeamBundleCompareDialog({
                   side={compare.sideA}
                   locale={locale}
                   copy={t}
+                  suggested={suggested === "A"}
+                  suggestedLabel={t.suggested}
+                  ledgerNewLabel={
+                    previewA
+                      ? previewA.stats.new > 0
+                        ? t.importNew(previewA.stats.new)
+                        : t.importNothingNew
+                      : undefined
+                  }
                 />
                 <OverviewCard
                   label={t.bundleB}
                   side={compare.sideB}
                   locale={locale}
                   copy={t}
+                  suggested={suggested === "B"}
+                  suggestedLabel={t.suggested}
+                  ledgerNewLabel={
+                    previewB
+                      ? previewB.stats.new > 0
+                        ? t.importNew(previewB.stats.new)
+                        : t.importNothingNew
+                      : undefined
+                  }
                 />
               </div>
             ) : tab === "memory" ? (
@@ -375,14 +461,72 @@ export function TeamBundleCompareDialog({
           </>
         )}
 
-        <DialogFooter className="border-white/5 bg-transparent sm:justify-end">
-          <Button
-            variant="outline"
-            className="border-white/10 bg-white/5 text-white/70"
-            onClick={() => onOpenChange(false)}
-          >
-            {t.close}
-          </Button>
+        <DialogFooter className="flex-col gap-2 border-white/5 bg-transparent sm:flex-row sm:justify-end">
+          {compare && onImportPick && (
+            <p className="w-full text-[10px] text-white/30 sm:mr-auto sm:w-auto">
+              {loadingPreviews ? t.staging : t.importHint}
+            </p>
+          )}
+          <div className="flex w-full flex-wrap justify-end gap-2 sm:w-auto">
+            <Button
+              variant="outline"
+              disabled={stagingImport}
+              className="border-white/10 bg-white/5 text-white/70"
+              onClick={() => onOpenChange(false)}
+            >
+              {t.close}
+            </Button>
+            {compare && onImportPick && bundleA && (
+              <Button
+                disabled={stagingImport || loadingPreviews}
+                className={cn(
+                  "bg-sky-500 text-white hover:bg-sky-400",
+                  suggested === "A" &&
+                    "ring-1 ring-sky-300/50 shadow-[0_0_16px_rgba(56,189,248,0.2)]",
+                )}
+                onClick={() => handleImport("A")}
+              >
+                {stagingImport ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  t.importA
+                )}
+                {!loadingPreviews && previewA && (
+                  <span className="ml-1 text-[10px] opacity-80">
+                    ·{" "}
+                    {previewA.stats.new > 0
+                      ? t.importNew(previewA.stats.new)
+                      : t.importNothingNew}
+                  </span>
+                )}
+              </Button>
+            )}
+            {compare && onImportPick && bundleB && (
+              <Button
+                disabled={stagingImport || loadingPreviews}
+                className={cn(
+                  "bg-violet-500 text-white hover:bg-violet-400",
+                  suggested === "B" &&
+                    "ring-1 ring-violet-300/50 shadow-[0_0_16px_rgba(167,139,250,0.2)]",
+                )}
+                onClick={() => handleImport("B")}
+              >
+                {stagingImport ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  t.importB
+                )}
+                {!loadingPreviews && previewB && (
+                  <span className="ml-1 text-[10px] opacity-80">
+                    ·{" "}
+                    {previewB.stats.new > 0
+                      ? t.importNew(previewB.stats.new)
+                      : t.importNothingNew}
+                  </span>
+                )}
+              </Button>
+            )}
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -476,6 +620,9 @@ function OverviewCard({
   side,
   locale,
   copy,
+  suggested = false,
+  suggestedLabel,
+  ledgerNewLabel,
 }: {
   label: string;
   side: TeamBundleCompare["sideA"];
@@ -488,12 +635,29 @@ function OverviewCard({
     pinned: string;
     crewLog: string;
   };
+  suggested?: boolean;
+  suggestedLabel?: string;
+  ledgerNewLabel?: string;
 }) {
   return (
-    <div className="rounded-xl border border-white/8 bg-black/20 p-3 text-xs">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-white/35">
-        {label}
-      </p>
+    <div
+      className={cn(
+        "rounded-xl border bg-black/20 p-3 text-xs",
+        suggested
+          ? "border-emerald-400/25 shadow-[0_0_20px_rgba(52,211,153,0.06)]"
+          : "border-white/8",
+      )}
+    >
+      <div className="flex items-center gap-2">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-white/35">
+          {label}
+        </p>
+        {suggested && suggestedLabel && (
+          <span className="rounded-full border border-emerald-400/30 bg-emerald-500/15 px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-wider text-emerald-200/90">
+            {suggestedLabel}
+          </span>
+        )}
+      </div>
       <p className="mt-1 text-sm font-medium text-white/85">{side.team}</p>
       <dl className="mt-2 space-y-1 text-white/45">
         <div>
@@ -514,6 +678,9 @@ function OverviewCard({
           <div>
             {side.stats.crewLog} {copy.crewLog}
           </div>
+        )}
+        {ledgerNewLabel && (
+          <div className="text-sky-300/70">{ledgerNewLabel}</div>
         )}
       </dl>
     </div>

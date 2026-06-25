@@ -13,8 +13,8 @@ New users: **Use this template** → clone their copy.
 ## 2. Pin the release (1 min)
 
 1. **Releases** → **Draft a new release**
-2. Choose tag `v0.16.0` (or latest)
-3. Title: `v0.16.x — Crew log panel & local studio`
+2. Choose tag `v0.17.0` (or latest)
+3. Title: `v0.17.x — Compare-to-import & local studio`
 4. Paste changelog from README
 5. Publish
 

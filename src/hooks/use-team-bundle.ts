@@ -102,10 +102,9 @@ export function useTeamBundle(locale: Locale) {
     }
   }, []);
 
-  const stageImport = useCallback(async (file: File) => {
+  const stageBundle = useCallback(async (bundle: TeamBundle) => {
     setError(null);
     try {
-      const bundle = await readTeamBundleFile(file);
       const existingById = await fetchLedgerEntryMap();
       const preview = buildBundleImportPreview(bundle, existingById);
       setStagedImport({ bundle, preview });
@@ -117,6 +116,22 @@ export function useTeamBundle(locale: Locale) {
       throw err;
     }
   }, []);
+
+  const stageImport = useCallback(
+    async (file: File) => {
+      setError(null);
+      try {
+        const bundle = await readTeamBundleFile(file);
+        return await stageBundle(bundle);
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Team bundle import failed";
+        setError(message);
+        throw err;
+      }
+    },
+    [stageBundle],
+  );
 
   const confirmStagedImport = useCallback(async () => {
     if (!stagedImport) return null;
@@ -136,6 +151,7 @@ export function useTeamBundle(locale: Locale) {
 
   return {
     exportBundle,
+    stageBundle,
     stageImport,
     confirmStagedImport,
     cancelStagedImport,

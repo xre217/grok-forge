@@ -71,6 +71,7 @@ export function ForgeStudio() {
   const {
     exportBundle,
     stageImport,
+    stageBundle,
     confirmStagedImport,
     cancelStagedImport,
     stagedImport,
@@ -418,6 +419,12 @@ export function ForgeStudio() {
         open={compareBundlesOpen}
         onOpenChange={setCompareBundlesOpen}
         locale={locale}
+        stagingImport={isTeamBundleImporting}
+        onImportPick={async (bundle) => {
+          setCompareBundlesOpen(false);
+          setActivePanel("explore");
+          await stageBundle(bundle);
+        }}
       />
     </div>
   );

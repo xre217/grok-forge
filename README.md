@@ -239,6 +239,11 @@ Vercel deploy is optional — Forge is designed to run on your machine.
 
 ## Changelog
 
+### v0.17.0 — Import winner after compare
+- **Compare → import** — Import A / Import B opens the ledger diff preview before merge
+- **Suggested badge** — picks winner by new vs ledger, uniqueness vs other bundle, then recency
+- **`stageBundle()`** — stage import from in-memory bundle (compare flow, no re-pick file)
+
 ### v0.16.0 — Crew log panel + THRML in Explore
 - **Crew log panel** — dedicated studio tab (`6` / nav / ⌘K) with kind filters, search, and full event history
 - **Header crew log** — "View all" jumps to the crew panel
