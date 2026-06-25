@@ -239,6 +239,11 @@ Vercel deploy is optional — Forge is designed to run on your machine.
 
 ## Changelog
 
+### v0.15.0 — Compare two bundles
+- **Compare bundles** — pick two team bundle JSON files; see memory diff (only in A/B, shared, claim changed)
+- **Crew log diff** — when either bundle carries `crewLog`, compare shared vs unique events
+- **Explore panel** + **⌘K** — "Compare team bundles" opens side-by-side preview before import
+
 ### v0.14.0 — Crew log export
 - **Session export v1.2** — includes `crewActivity` slice (last 32 events)
 - **Team bundle v1.1** — optional `crewLog` on export; merged on import (deduped by id)

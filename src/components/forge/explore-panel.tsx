@@ -15,7 +15,15 @@ import type { Locale } from "@/types/forge";
 import { cn } from "@/lib/utils";
 import { useTeamBundle } from "@/hooks/use-team-bundle";
 import { TeamBundleImportPreviewDialog } from "@/components/forge/team-bundle-import-preview";
-import { Download, Loader2, Rocket, Sparkles, Telescope, Upload } from "lucide-react";
+import {
+  ArrowLeftRight,
+  Download,
+  Loader2,
+  Rocket,
+  Sparkles,
+  Telescope,
+  Upload,
+} from "lucide-react";
 import { useRef, useState } from "react";
 
 type ExplorePanelProps = {
@@ -23,6 +31,7 @@ type ExplorePanelProps = {
   thrml?: ThrmlSignal | null;
   onDiscuss?: (mission: ExplorationMission, seed: string) => void;
   onBundleImported?: (detail: string) => void;
+  onCompareBundles?: () => void;
   model?: string;
 };
 
@@ -44,6 +53,7 @@ const COPY = {
     bundleHint: "Share explorations + pinned memory with your crew (JSON).",
     bundleExported: "Team bundle exported",
     bundleImported: "Team bundle imported",
+    compareBundles: "Compare bundles",
   },
   zh: {
     title: "探索",
@@ -61,6 +71,7 @@ const COPY = {
     bundleHint: "与队友分享探索记录与固定记忆（JSON）。",
     bundleExported: "团队包已导出",
     bundleImported: "团队包已导入",
+    compareBundles: "对比团队包",
   },
 } as const;
 
@@ -69,6 +80,7 @@ export function ExplorePanel({
   thrml,
   onDiscuss,
   onBundleImported,
+  onCompareBundles,
   model,
 }: ExplorePanelProps) {
   const t = COPY[locale];
@@ -202,6 +214,17 @@ export function ExplorePanel({
             )}
             {t.importBundle}
           </Button>
+          {onCompareBundles && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 rounded-full border-white/10 bg-white/5 text-[10px] text-white/70"
+              onClick={onCompareBundles}
+            >
+              <ArrowLeftRight className="size-3" />
+              {t.compareBundles}
+            </Button>
+          )}
           <span className="text-[10px] text-white/25">{t.bundleHint}</span>
         </div>
         <input

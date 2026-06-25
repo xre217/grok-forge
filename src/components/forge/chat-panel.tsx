@@ -50,6 +50,7 @@ type ChatPanelProps = {
   onResetChat?: () => void;
   onOpenExplore?: () => void;
   onBundleImported?: (detail: string) => void;
+  onCompareBundles?: () => void;
 };
 
 const COPY = {
@@ -131,6 +132,7 @@ export function ChatPanel({
   onResetChat,
   onOpenExplore,
   onBundleImported,
+  onCompareBundles,
 }: ChatPanelProps) {
   const t = COPY[locale];
   const status = useForgeStatus();
@@ -269,6 +271,7 @@ export function ChatPanel({
         model={model}
         onDiscuss={onExploreDiscuss}
         onBundleImported={onBundleImported}
+        onCompareBundles={onCompareBundles}
       />
     );
   }

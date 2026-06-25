@@ -415,3 +415,176 @@ export function listBundleMissionIds(bundle: TeamBundle): string[] {
     ),
   ].filter((id) => EXPLORATION_MISSIONS.some((m) => m.id === id));
 }
+
+export type BundleCompareSide = {
+  team: string;
+  exportedAt: string;
+  forgeVersion: string;
+  stats: {
+    total: number;
+    explorations: number;
+    pinned: number;
+    crewLog: number;
+  };
+};
+
+export type BundleMemoryCompareRow = {
+  id: string;
+  entry: TeamBundleEntry;
+};
+
+export type BundleMemoryConflictRow = {
+  id: string;
+  entryA: TeamBundleEntry;
+  entryB: TeamBundleEntry;
+};
+
+export type BundleCompareMemoryDiff = {
+  onlyInA: BundleMemoryCompareRow[];
+  onlyInB: BundleMemoryCompareRow[];
+  unchanged: BundleMemoryCompareRow[];
+  claimChanged: BundleMemoryConflictRow[];
+};
+
+export type BundleCrewCompareRow = {
+  id: string;
+  activity: CrewActivity;
+};
+
+export type BundleCrewConflictRow = {
+  id: string;
+  activityA: CrewActivity;
+  activityB: CrewActivity;
+};
+
+export type BundleCompareCrewDiff = {
+  onlyInA: BundleCrewCompareRow[];
+  onlyInB: BundleCrewCompareRow[];
+  unchanged: BundleCrewCompareRow[];
+  summaryChanged: BundleCrewConflictRow[];
+};
+
+export type TeamBundleCompare = {
+  sideA: BundleCompareSide;
+  sideB: BundleCompareSide;
+  memory: BundleCompareMemoryDiff;
+  crew?: BundleCompareCrewDiff;
+  stats: {
+    onlyInA: number;
+    onlyInB: number;
+    sharedUnchanged: number;
+    claimChanged: number;
+    crewOnlyInA: number;
+    crewOnlyInB: number;
+    crewUnchanged: number;
+    crewSummaryChanged: number;
+  };
+};
+
+function bundleCompareSide(bundle: TeamBundle): BundleCompareSide {
+  return {
+    team: bundle.team.label,
+    exportedAt: bundle.exportedAt,
+    forgeVersion: bundle.forge.version,
+    stats: {
+      total: bundle.stats.total,
+      explorations: bundle.stats.explorations,
+      pinned: bundle.stats.pinned,
+      crewLog: bundle.crewLog?.entries.length ?? 0,
+    },
+  };
+}
+
+function compareBundleMemory(
+  a: TeamBundle,
+  b: TeamBundle,
+): BundleCompareMemoryDiff {
+  const mapA = new Map(a.memory.entries.map((e) => [e.id, e]));
+  const mapB = new Map(b.memory.entries.map((e) => [e.id, e]));
+
+  const onlyInA: BundleMemoryCompareRow[] = [];
+  const onlyInB: BundleMemoryCompareRow[] = [];
+  const unchanged: BundleMemoryCompareRow[] = [];
+  const claimChanged: BundleMemoryConflictRow[] = [];
+
+  for (const [id, entryA] of mapA) {
+    const entryB = mapB.get(id);
+    if (!entryB) {
+      onlyInA.push({ id, entry: entryA });
+    } else if (entryA.claim.trim() === entryB.claim.trim()) {
+      unchanged.push({ id, entry: entryA });
+    } else {
+      claimChanged.push({ id, entryA, entryB });
+    }
+  }
+
+  for (const [id, entryB] of mapB) {
+    if (!mapA.has(id)) {
+      onlyInB.push({ id, entry: entryB });
+    }
+  }
+
+  return { onlyInA, onlyInB, unchanged, claimChanged };
+}
+
+function compareBundleCrew(
+  a: TeamBundle,
+  b: TeamBundle,
+): BundleCompareCrewDiff | undefined {
+  const crewA = a.crewLog?.entries ?? [];
+  const crewB = b.crewLog?.entries ?? [];
+  if (!crewA.length && !crewB.length) return undefined;
+
+  const mapA = new Map(crewA.map((c) => [c.id, c]));
+  const mapB = new Map(crewB.map((c) => [c.id, c]));
+
+  const onlyInA: BundleCrewCompareRow[] = [];
+  const onlyInB: BundleCrewCompareRow[] = [];
+  const unchanged: BundleCrewCompareRow[] = [];
+  const summaryChanged: BundleCrewConflictRow[] = [];
+
+  for (const [id, activityA] of mapA) {
+    const activityB = mapB.get(id);
+    if (!activityB) {
+      onlyInA.push({ id, activity: activityA });
+    } else if (activityA.summary.trim() === activityB.summary.trim()) {
+      unchanged.push({ id, activity: activityA });
+    } else {
+      summaryChanged.push({ id, activityA, activityB });
+    }
+  }
+
+  for (const [id, activityB] of mapB) {
+    if (!mapA.has(id)) {
+      onlyInB.push({ id, activity: activityB });
+    }
+  }
+
+  return { onlyInA, onlyInB, unchanged, summaryChanged };
+}
+
+/** Compare two team bundles — memory by id, optional crew log diff */
+export function compareTeamBundles(
+  a: TeamBundle,
+  b: TeamBundle,
+): TeamBundleCompare {
+  const memory = compareBundleMemory(a, b);
+  const crew = compareBundleCrew(a, b);
+
+  return {
+    sideA: bundleCompareSide(a),
+    sideB: bundleCompareSide(b),
+    memory,
+    crew,
+    stats: {
+      onlyInA: memory.onlyInA.length,
+      onlyInB: memory.onlyInB.length,
+      sharedUnchanged: memory.unchanged.length,
+      claimChanged: memory.claimChanged.length,
+      crewOnlyInA: crew?.onlyInA.length ?? 0,
+      crewOnlyInB: crew?.onlyInB.length ?? 0,
+      crewUnchanged: crew?.unchanged.length ?? 0,
+      crewSummaryChanged: crew?.summaryChanged.length ?? 0,
+    },
+  };
+}

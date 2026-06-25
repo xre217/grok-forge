@@ -14,6 +14,7 @@ import { useForgeStatus } from "@/hooks/use-forge-status";
 import { useSessionExport } from "@/hooks/use-session-export";
 import { useSessionImport } from "@/hooks/use-session-import";
 import { useTeamBundle } from "@/hooks/use-team-bundle";
+import { TeamBundleCompareDialog } from "@/components/forge/team-bundle-compare-dialog";
 import { TeamBundleImportPreviewDialog } from "@/components/forge/team-bundle-import-preview";
 import { validateTeamBundle } from "@/lib/team-bundle";
 import { useThrmlSignal } from "@/hooks/use-thrml-signal";
@@ -44,6 +45,7 @@ export function ForgeStudio() {
     seed: string;
   } | null>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
+  const [compareBundlesOpen, setCompareBundlesOpen] = useState(false);
 
   const studioSkills = useMemo(
     () => getStudioSkills(getClientForgePack()),
@@ -347,6 +349,10 @@ export function ForgeStudio() {
                 detail,
               })
             }
+            onCompareBundles={() => {
+              setActivePanel("explore");
+              setCompareBundlesOpen(true);
+            }}
           />
         </div>
       </div>
@@ -361,6 +367,10 @@ export function ForgeStudio() {
         onImport={() => importInputRef.current?.click()}
         onExportTeamBundle={() => void handleExportTeamBundle()}
         onImportTeamBundle={() => importInputRef.current?.click()}
+        onCompareTeamBundles={() => {
+          setActivePanel("explore");
+          setCompareBundlesOpen(true);
+        }}
         locale={locale}
       />
 
@@ -398,6 +408,12 @@ export function ForgeStudio() {
               }),
             )
         }
+      />
+
+      <TeamBundleCompareDialog
+        open={compareBundlesOpen}
+        onOpenChange={setCompareBundlesOpen}
+        locale={locale}
       />
     </div>
   );

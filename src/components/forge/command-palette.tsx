@@ -23,6 +23,7 @@ import {
   Terminal,
   Upload,
   Users,
+  ArrowLeftRight,
 } from "lucide-react";
 import type { Locale } from "@/types/forge";
 import { useRouter } from "next/navigation";
@@ -37,6 +38,7 @@ type CommandPaletteProps = {
   onImport?: () => void;
   onExportTeamBundle?: () => void;
   onImportTeamBundle?: () => void;
+  onCompareTeamBundles?: () => void;
   locale?: Locale;
 };
 
@@ -48,6 +50,7 @@ export function CommandPalette({
   onImport,
   onExportTeamBundle,
   onImportTeamBundle,
+  onCompareTeamBundles,
   locale = "en",
 }: CommandPaletteProps) {
   const [open, setOpen] = useState(false);
@@ -134,6 +137,15 @@ export function CommandPalette({
           >
             <Upload />
             {locale === "zh" ? "导入团队包" : "Import team bundle"}
+          </CommandItem>
+          <CommandItem
+            onSelect={() => {
+              run(() => onPanelChange?.("explore"));
+              onCompareTeamBundles?.();
+            }}
+          >
+            <ArrowLeftRight />
+            {locale === "zh" ? "对比团队包" : "Compare team bundles"}
           </CommandItem>
         </CommandGroup>
         <CommandSeparator />
