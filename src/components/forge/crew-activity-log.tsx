@@ -20,6 +20,7 @@ const COPY = {
     title: "Crew log",
     empty: "Pins, explorations, and bundle events appear here.",
     clear: "Clear",
+    viewAll: "View all",
     justNow: "just now",
     minutesAgo: (n: number) => (n === 1 ? "1m ago" : `${n}m ago`),
     hoursAgo: (n: number) => (n === 1 ? "1h ago" : `${n}h ago`),
@@ -37,6 +38,7 @@ const COPY = {
     title: "团队日志",
     empty: "固定、探索与团队包操作会记录在此。",
     clear: "清除",
+    viewAll: "查看全部",
     justNow: "刚刚",
     minutesAgo: (n: number) => `${n} 分钟前`,
     hoursAgo: (n: number) => `${n} 小时前`,
@@ -55,6 +57,7 @@ const COPY = {
 type CrewActivityLogProps = {
   locale: Locale;
   className?: string;
+  onOpenFull?: () => void;
 };
 
 function formatRelativeTime(iso: string, locale: Locale): string {
@@ -85,7 +88,11 @@ function ActivityIcon({ kind }: { kind: CrewActivity["kind"] }) {
   }
 }
 
-export function CrewActivityLog({ locale, className }: CrewActivityLogProps) {
+export function CrewActivityLog({
+  locale,
+  className,
+  onOpenFull,
+}: CrewActivityLogProps) {
   const t = COPY[locale];
   const { activities } = useCrewActivity(16);
   const [expanded, setExpanded] = useState(false);
@@ -162,7 +169,16 @@ export function CrewActivityLog({ locale, className }: CrewActivityLogProps) {
                   ))}
                 </ul>
               </ScrollArea>
-              <div className="flex justify-end border-t border-white/5 px-3 py-1.5">
+              <div className="flex items-center justify-end gap-3 border-t border-white/5 px-3 py-1.5">
+                {onOpenFull && (
+                  <button
+                    type="button"
+                    onClick={onOpenFull}
+                    className="text-[9px] text-violet-300/70 hover:text-violet-200"
+                  >
+                    {t.viewAll}
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => clearCrewActivities()}

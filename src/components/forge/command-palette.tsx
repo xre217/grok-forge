@@ -24,6 +24,7 @@ import {
   Upload,
   Users,
   ArrowLeftRight,
+  History,
 } from "lucide-react";
 import type { Locale } from "@/types/forge";
 import { useRouter } from "next/navigation";
@@ -108,6 +109,11 @@ export function CommandPalette({
           >
             <Telescope />
             {locale === "zh" ? "探索宇宙" : "Explore cosmos"}
+          </CommandItem>
+          <CommandItem onSelect={() => run(() => onPanelChange?.("crew"))}>
+            <History />
+            {locale === "zh" ? "团队日志" : "Crew log"}
+            <CommandShortcut>6</CommandShortcut>
           </CommandItem>
           <CommandItem onSelect={() => run(() => onExport?.())}>
             <Download />

@@ -304,7 +304,10 @@ export function ForgeStudio() {
           locale={locale}
           onOpenExplore={() => setActivePanel("explore")}
         />
-        <CrewActivityLog locale={locale} />
+        <CrewActivityLog
+          locale={locale}
+          onOpenFull={() => setActivePanel("crew")}
+        />
         <ThrmlSignalBar
           signal={thrmlSignal}
           loading={thrmlLoading}
@@ -313,7 +316,8 @@ export function ForgeStudio() {
           locale={locale}
           collapsed={
             activePanel === "ledger" ||
-            activePanel === "deploy"
+            activePanel === "deploy" ||
+            activePanel === "crew"
           }
         />
         <div className="flex min-h-0 flex-1 gap-4">

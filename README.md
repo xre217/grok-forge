@@ -239,6 +239,11 @@ Vercel deploy is optional — Forge is designed to run on your machine.
 
 ## Changelog
 
+### v0.16.0 — Crew log panel + THRML in Explore
+- **Crew log panel** — dedicated studio tab (`6` / nav / ⌘K) with kind filters, search, and full event history
+- **Header crew log** — "View all" jumps to the crew panel
+- **Explore THRML** — engine badge (`Ising` / `Hash fallback`) on high-exploration voyage hint
+
 ### v0.15.0 — Compare two bundles
 - **Compare bundles** — pick two team bundle JSON files; see memory diff (only in A/B, shared, claim changed)
 - **Crew log diff** — when either bundle carries `crewLog`, compare shared vs unique events

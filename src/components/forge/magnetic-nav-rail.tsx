@@ -5,6 +5,7 @@ import type { Locale, StudioPanel } from "@/types/forge";
 import {
   BookOpen,
   HardDrive,
+  History,
   MessageSquare,
   Sparkles,
   Telescope,
@@ -24,6 +25,7 @@ const PANELS: Array<{
   { id: "ledger", icon: BookOpen, en: "Ledger", zh: "账本", shortcut: "3" },
   { id: "deploy", icon: HardDrive, en: "Local", zh: "本地", shortcut: "4" },
   { id: "explore", icon: Telescope, en: "Explore", zh: "探索", shortcut: "5" },
+  { id: "crew", icon: History, en: "Crew log", zh: "团队日志", shortcut: "6" },
 ];
 
 type MagneticNavRailProps = {

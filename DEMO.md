@@ -169,7 +169,7 @@ Best for **crew explorations** without sharing full chat history:
 3. They **Import bundle** in Explore — **Diff vs ledger** tab, then **Merge**
 4. **Compare bundles** — pick two JSON exports to see memory + crew log differences before merging
 4. Memory strip + chat injection pick up imported pins and explorations
-5. **Crew log** (studio header) records pins, explores, and bundle/session I/O — included in `⌘⇧E` / team bundle exports
+5. **Crew log** (studio header or **6** / nav) — filter pins, explores, bundle/session I/O; included in `⌘⇧E` / team bundle exports
 
 Bundle includes: exploration observations, pinned replies, mission groupings.
 

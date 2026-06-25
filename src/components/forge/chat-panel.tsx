@@ -1,5 +1,6 @@
 "use client";
 
+import { CrewLogPanel } from "@/components/forge/crew-log-panel";
 import { ExplorePanel } from "@/components/forge/explore-panel";
 import { TeamMemoryStrip } from "@/components/forge/team-memory-strip";
 import { LedgerPanel } from "@/components/forge/ledger-panel";
@@ -274,6 +275,10 @@ export function ChatPanel({
         onCompareBundles={onCompareBundles}
       />
     );
+  }
+
+  if (activePanel === "crew") {
+    return <CrewLogPanel locale={locale} />;
   }
 
   if (activePanel === "ledger") {

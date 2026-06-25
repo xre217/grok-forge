@@ -15,6 +15,7 @@ import type { Locale } from "@/types/forge";
 import { cn } from "@/lib/utils";
 import { useTeamBundle } from "@/hooks/use-team-bundle";
 import { TeamBundleImportPreviewDialog } from "@/components/forge/team-bundle-import-preview";
+import { ThrmlEngineBadge } from "@/components/forge/thrml-engine-badge";
 import {
   ArrowLeftRight,
   Download,
@@ -163,12 +164,13 @@ export function ExplorePanel({
           </div>
         </div>
         {explorationHigh && thrml && (
-          <p className="mt-3 flex items-center gap-1.5 text-[10px] text-sky-300/80">
+          <p className="mt-3 flex flex-wrap items-center gap-1.5 text-[10px] text-sky-300/80">
             <Sparkles className="size-3" />
             {t.explorationHigh}
             <span className="font-mono text-white/30">
               ({thrml.scores.exploration.toFixed(2)})
             </span>
+            <ThrmlEngineBadge signal={thrml} />
           </p>
         )}
         <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-white/5 pt-3">

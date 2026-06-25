@@ -51,6 +51,7 @@ export function validateSessionBundle(data: unknown): SessionExportBundle | null
     "ledger",
     "deploy",
     "explore",
+    "crew",
   ];
   if (
     typeof activePanel !== "string" ||
