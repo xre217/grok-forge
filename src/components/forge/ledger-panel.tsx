@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Locale } from "@/types/forge";
 import { BookOpen, Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { FORGE_LEDGER_UPDATED } from "@/lib/forge-events";
+import { useCallback, useEffect, useState } from "react";
 
 type LedgerEntry = {
   id: string;
@@ -28,15 +29,15 @@ type LedgerResponse = {
 const COPY = {
   en: {
     title: "Evidence Ledger",
-    subtitle: "Your personal constitution — append-only, forkable, un-nationalizable.",
-    empty: "No entries yet. The ledger lives at ~/.jarvis/memory/ledger.jsonl",
+    subtitle: "Append-only local memory — pin chat replies or POST /api/ledger.",
+    empty: "No entries yet. Pin a reply in chat or enable FORGE_LEDGER_ENABLED.",
     entries: "entries",
     sovereignty: "sovereignty-tagged",
   },
   zh: {
     title: "证据账本",
-    subtitle: "你的个人宪法——只增不改，可分叉，不可国有化。",
-    empty: "暂无条目。账本路径：~/.jarvis/memory/ledger.jsonl",
+    subtitle: "只增不改的本地记忆——在对话中固定回复或 POST /api/ledger。",
+    empty: "暂无条目。在对话中固定回复或启用 FORGE_LEDGER_ENABLED。",
     entries: "条",
     sovereignty: "主权标签",
   },
@@ -47,12 +48,23 @@ export function LedgerPanel({ locale }: { locale: Locale }) {
   const [data, setData] = useState<LedgerResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const loadLedger = useCallback(() => {
+    setLoading(true);
     fetch("/api/ledger?limit=20")
       .then((r) => r.json())
       .then(setData)
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    loadLedger();
+  }, [loadLedger]);
+
+  useEffect(() => {
+    const onUpdate = () => loadLedger();
+    window.addEventListener(FORGE_LEDGER_UPDATED, onUpdate);
+    return () => window.removeEventListener(FORGE_LEDGER_UPDATED, onUpdate);
+  }, [loadLedger]);
 
   return (
     <div className="forge-glass flex h-full flex-1 flex-col rounded-2xl">

@@ -1,3 +1,5 @@
+import { emitLedgerUpdated } from "@/lib/forge-events";
+
 export async function pinToLedger(claim: string, type = "observation") {
   const res = await fetch("/api/ledger", {
     method: "POST",
@@ -14,5 +16,7 @@ export async function pinToLedger(claim: string, type = "observation") {
     throw new Error(body.error ?? `Ledger write failed (${res.status})`);
   }
 
-  return (await res.json()) as { ok: boolean };
+  const result = (await res.json()) as { ok: boolean };
+  emitLedgerUpdated();
+  return result;
 }

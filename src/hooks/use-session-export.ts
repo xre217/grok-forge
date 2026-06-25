@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  backupSessionToDisk,
   buildSessionExport,
   downloadSessionExport,
 } from "@/lib/session-export";
@@ -35,6 +36,7 @@ export function useSessionExport({
         thrml,
       });
       const filename = downloadSessionExport(bundle);
+      void backupSessionToDisk(bundle);
       setLastExport(filename);
       return filename;
     } finally {

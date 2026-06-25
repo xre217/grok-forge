@@ -1,6 +1,6 @@
 {
   "name": "grok-forge",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Grok Forge — your local AI studio. Chat, skills, memory, export. Ollama-powered.",
   "scripts": {
@@ -10,6 +10,9 @@
     "start": "next start",
     "forge:local": "bash scripts/run-local.sh",
     "setup": "bash scripts/setup.sh",
+    "vilo:preset": "bash scripts/vilo-preset.sh",
+    "docker:up": "docker compose up --build -d",
+    "docker:down": "docker compose down",
     "lint": "eslint"
   },
   "dependencies": {

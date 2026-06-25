@@ -1,0 +1,11 @@
+{
+  "name": "Grok Forge",
+  "description": "Fork your own local AI studio — Ollama chat, skills, THRML, session export/import.",
+  "primaryAction": {
+    "label": "Run setup",
+    "script": "bash scripts/setup.sh"
+  },
+  "postCreate": {
+    "message": "Welcome to Grok Forge! Run: npm run setup && npm run dev:local"
+  }
+}

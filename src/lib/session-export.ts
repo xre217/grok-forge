@@ -108,6 +108,18 @@ export async function buildSessionExport(
   return { ...base, summary: buildSummary(base) };
 }
 
+export async function backupSessionToDisk(bundle: SessionExportBundle) {
+  try {
+    await fetch("/api/sessions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bundle),
+    });
+  } catch {
+    // non-blocking — browser download still succeeds
+  }
+}
+
 export function downloadSessionExport(bundle: SessionExportBundle) {
   const stamp = bundle.exportedAt.replace(/[:.]/g, "-").slice(0, 19);
   const filename = `grok-forge-session-${stamp}.json`;

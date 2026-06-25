@@ -82,9 +82,8 @@ export function LocalHostPanel({
         {t.run}
       </p>
       <pre className="mb-6 rounded-xl border border-white/5 bg-black/50 p-4 font-mono text-xs leading-relaxed text-[var(--forge-gold-dim)]">
-{`cd ~/grok-forge
-npm run forge:local
-# → http://localhost:3847`}
+{`npm run forge:local     # → :3847
+npm run docker:up       # Docker + host Ollama`}
       </pre>
 
       <p className="mb-2 text-xs font-medium uppercase tracking-widest text-white/30">

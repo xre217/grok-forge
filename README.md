@@ -113,6 +113,7 @@ export THRML_REPO_PATH=/path/to/thrml
 | `/api/ledger` | POST | Append ledger entry |
 | `/api/thrml` | POST | THRML signal |
 | `/api/config` | GET | Public forge config + skills |
+| `/api/sessions` | GET/POST | List / save server-side session backups |
 
 ### Record a ledger entry
 
@@ -155,13 +156,45 @@ grok-forge/
 └── .env.example
 ```
 
+## Docker (Ollama on host)
+
+Forge in Docker talks to Ollama on your machine via `host.docker.internal`:
+
+```bash
+ollama serve   # keep running on host
+npm run docker:up
+# → http://localhost:3847/studio
+```
+
+```bash
+npm run docker:down
+```
+
+Volumes persist `~/.forge` session backups and ledger at `/data/jarvis` inside the container.
+
+## VILO pack (Tre / advanced)
+
+```bash
+npm run vilo:preset
+npm run dev:local
+```
+
+Enables `FORGE_PACK=vilo`, VILO skill, and ledger constitution mode.
+
+## Use as GitHub template
+
+On GitHub: **Settings → General → Template repository** (enable), then others click **Use this template**.
+
 ## Scripts
 
 | Command | Description |
 |---------|-------------|
 | `npm run dev:local` | Dev server with local mode |
 | `npm run forge:local` | Build + start on port 3847 |
-| `bash scripts/setup.sh` | Install deps, create `.env.local`, pull Ollama model |
+| `npm run setup` | Install deps, create `.env.local`, pull Ollama model |
+| `npm run vilo:preset` | Enable VILO pack in `.env.local` |
+| `npm run docker:up` | Docker Compose build + run |
+| `npm run docker:down` | Stop Docker stack |
 
 ## Deploy (self-hosted)
 
@@ -173,6 +206,13 @@ FORGE_MODE=local npm run start
 Vercel deploy is optional — Forge is designed to run on your machine.
 
 ## Changelog
+
+### v0.3.0
+- Docker + Compose (Ollama on host)
+- GitHub CI workflow
+- Server-side session backup on export (`~/.forge/sessions/`)
+- Ledger panel live-refresh on pin
+- `npm run vilo:preset` for VILO pack
 
 ### v0.2.0
 - Ollama model picker in studio (persisted in browser)

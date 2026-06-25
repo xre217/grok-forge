@@ -1,0 +1,27 @@
+services:
+  forge:
+    build: .
+    ports:
+      - "${FORGE_PORT:-3847}:3847"
+    environment:
+      FORGE_MODE: local
+      FORGE_LOCAL_FIRST: "1"
+      FORGE_PORT: "3847"
+      OLLAMA_BASE_URL: http://host.docker.internal:11434/api
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2:3b}
+      FORGE_LEDGER_ENABLED: ${FORGE_LEDGER_ENABLED:-1}
+      JARVIS_HOME: /data/jarvis
+      FORGE_HOME: /data/forge
+      FORGE_USER_NAME: ${FORGE_USER_NAME:-you}
+      FORGE_PACK: ${FORGE_PACK:-}
+      NEXT_PUBLIC_FORGE_PACK: ${NEXT_PUBLIC_FORGE_PACK:-}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - forge-data:/data/forge
+      - jarvis-ledger:/data/jarvis
+    restart: unless-stopped
+
+volumes:
+  forge-data:
+  jarvis-ledger:
