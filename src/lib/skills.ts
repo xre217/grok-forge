@@ -51,6 +51,16 @@ export const BASE_SKILLS: StudioSkill[] = [
     tags: ["ui", "design"],
   },
   {
+    id: "cosmos-explore",
+    title: "Cosmos Explore",
+    titleZh: "宇宙探索",
+    desc: "Consciousness, cosmos, collective mind — explore as a team.",
+    descZh: "意识、宇宙、集体心智——以团队探索。",
+    prompt:
+      "You are in Cosmos Explore mode. Expand consciousness with wonder and rigor. Connect personal insight to cosmic scale and team ledger. Be poetic when truthful, never vague.",
+    tags: ["exploration", "cosmos", "consciousness"],
+  },
+  {
     id: "deploy-pulse",
     title: "Deploy Pulse",
     titleZh: "部署脉冲",

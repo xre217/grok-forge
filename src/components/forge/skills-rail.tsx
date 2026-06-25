@@ -126,7 +126,7 @@ export function SkillsRail({
       <div className="mt-3 flex items-center gap-2 rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2 text-xs text-white/40">
         <Cpu className="size-3.5 text-[var(--forge-gold-dim)]" />
         <span>
-          ⌘K · 1–4 {locale === "zh" ? "切换面板" : "panels"}
+          ⌘K · 1–5 {locale === "zh" ? "切换面板" : "panels"}
         </span>
       </div>
     </aside>

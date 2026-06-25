@@ -7,6 +7,7 @@ import {
   HardDrive,
   MessageSquare,
   Sparkles,
+  Telescope,
 } from "lucide-react";
 import { LayoutGroup } from "framer-motion";
 import { useEffect } from "react";
@@ -22,6 +23,7 @@ const PANELS: Array<{
   { id: "skills", icon: Sparkles, en: "Skills", zh: "技能", shortcut: "2" },
   { id: "ledger", icon: BookOpen, en: "Ledger", zh: "账本", shortcut: "3" },
   { id: "deploy", icon: HardDrive, en: "Local", zh: "本地", shortcut: "4" },
+  { id: "explore", icon: Telescope, en: "Explore", zh: "探索", shortcut: "5" },
 ];
 
 type MagneticNavRailProps = {

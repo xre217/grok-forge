@@ -54,6 +54,8 @@ Open the studio, pick a skill, start chatting. Your messages go to **Ollama on y
 | **Model picker** | Switch Ollama models in the chat header (no `.env` edit) |
 | **Ledger pin** | Bookmark icon on replies → `POST /api/ledger` |
 | **Ledger panel** | Read optional memory at `~/.jarvis/memory/ledger.jsonl` |
+| **Explore** | Missions for consciousness, cosmos, and collective discovery |
+| **Consciousness Stream** | Team exploration log from ledger |
 | **⌘K palette** | Keyboard-first studio control |
 | **EN / 中文** | Bilingual UI toggle |
 
@@ -206,6 +208,12 @@ FORGE_MODE=local npm run start
 Vercel deploy is optional — Forge is designed to run on your machine.
 
 ## Changelog
+
+### v0.4.0 — Consciousness & Cosmos
+- **Explore panel** (`5` / Telescope) — six missions across consciousness, cosmos, craft, collective
+- **Consciousness Stream** — live feed of exploration ledger entries
+- **`/api/explore`** — distill reflections via Ollama → append to ledger
+- **Cosmos Explore skill** — bridge Explore → Chat for team dialogue
 
 ### v0.3.0
 - Docker + Compose (Ollama on host)

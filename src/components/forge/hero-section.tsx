@@ -27,8 +27,11 @@ export function HeroSection() {
           {FORGE.name}
         </h1>
         <p className="mb-2 text-lg text-white/60">{FORGE.tagline}</p>
-        <p className="mb-8 text-sm text-emerald-400/80">
+        <p className="mb-2 text-sm text-emerald-400/80">
           Local-first — Ollama on your machine. Optional memory. No cloud bill required.
+        </p>
+        <p className="mb-8 text-xs text-sky-300/70">
+          Explore consciousness. Map the cosmos. Log discoveries as a team.
         </p>
         <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
           <MagneticButton asChild strength={0.38}>

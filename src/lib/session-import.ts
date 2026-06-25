@@ -41,7 +41,13 @@ export function validateSessionBundle(data: unknown): SessionExportBundle | null
   if (!session.messages.every(isChatMessage)) return null;
 
   const activePanel = session.activePanel;
-  const validPanels: StudioPanel[] = ["chat", "skills", "ledger", "deploy"];
+  const validPanels: StudioPanel[] = [
+    "chat",
+    "skills",
+    "ledger",
+    "deploy",
+    "explore",
+  ];
   if (
     typeof activePanel !== "string" ||
     !validPanels.includes(activePanel as StudioPanel)

@@ -1,7 +1,10 @@
 "use client";
 
+import { ExplorePanel } from "@/components/forge/explore-panel";
 import { LedgerPanel } from "@/components/forge/ledger-panel";
 import { LocalHostPanel } from "@/components/forge/local-host-panel";
+import type { ExplorationMission } from "@/lib/explorations";
+import type { ThrmlSignal } from "@/lib/thrml";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,6 +28,10 @@ type ChatPanelProps = {
   activeSkill: string | null;
   skillPrompt?: string;
   chatReloadKey?: number;
+  thrmlSignal?: ThrmlSignal | null;
+  exploreDiscuss?: { mission: ExplorationMission; seed: string } | null;
+  onExploreDiscuss?: (mission: ExplorationMission, seed: string) => void;
+  onExploreDiscussConsumed?: () => void;
   onSend?: (message: string) => void;
   onResetChat?: () => void;
 };
@@ -76,6 +83,10 @@ export function ChatPanel({
   activeSkill,
   skillPrompt,
   chatReloadKey = 0,
+  thrmlSignal,
+  exploreDiscuss,
+  onExploreDiscuss,
+  onExploreDiscussConsumed,
   onSend,
   onResetChat,
 }: ChatPanelProps) {
@@ -106,6 +117,16 @@ export function ChatPanel({
       .then(setStatus)
       .catch(() => null);
   }, []);
+
+  useEffect(() => {
+    if (!exploreDiscuss) return;
+    const label =
+      locale === "zh"
+        ? exploreDiscuss.mission.titleZh
+        : exploreDiscuss.mission.title;
+    setInput(`[${label}]\n${exploreDiscuss.seed}\n\n`);
+    onExploreDiscussConsumed?.();
+  }, [exploreDiscuss, locale, onExploreDiscussConsumed]);
 
   useEffect(() => {
     if (!skillPrompt || activeSkill === lastSkillRef.current) return;
@@ -179,6 +200,17 @@ export function ChatPanel({
       setIsLoading(false);
     }
   };
+
+  if (activePanel === "explore") {
+    return (
+      <ExplorePanel
+        locale={locale}
+        thrml={thrmlSignal}
+        model={model}
+        onDiscuss={onExploreDiscuss}
+      />
+    );
+  }
 
   if (activePanel === "ledger") {
     return <LedgerPanel locale={locale} />;

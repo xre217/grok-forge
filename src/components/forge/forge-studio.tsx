@@ -14,6 +14,7 @@ import { useThrmlSignal } from "@/hooks/use-thrml-signal";
 import { FORGE, ROUTES } from "@/lib/constants";
 import { getClientForgePack } from "@/lib/forge-pack";
 import { getStudioSkills } from "@/lib/skills";
+import type { ExplorationMission } from "@/lib/explorations";
 import type { Locale, StudioPanel } from "@/types/forge";
 import confetti from "canvas-confetti";
 import { Download, Languages, Loader2, Plus, Upload } from "lucide-react";
@@ -31,6 +32,10 @@ export function ForgeStudio() {
     detail: string;
   } | null>(null);
   const [chatReloadKey, setChatReloadKey] = useState(0);
+  const [exploreDiscuss, setExploreDiscuss] = useState<{
+    mission: ExplorationMission;
+    seed: string;
+  } | null>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
 
   const studioSkills = useMemo(
@@ -235,7 +240,10 @@ export function ForgeStudio() {
           error={thrmlError}
           onRetry={retryThrml}
           locale={locale}
-          collapsed={activePanel === "ledger" || activePanel === "deploy"}
+          collapsed={
+            activePanel === "ledger" ||
+            activePanel === "deploy"
+          }
         />
         <div className="flex min-h-0 flex-1 gap-4">
           <SkillsRail
@@ -252,6 +260,15 @@ export function ForgeStudio() {
             activeSkill={activeSkill}
             skillPrompt={skillPrompt}
             chatReloadKey={chatReloadKey}
+            thrmlSignal={thrmlSignal}
+            exploreDiscuss={exploreDiscuss}
+            onExploreDiscussConsumed={() => setExploreDiscuss(null)}
+            onExploreDiscuss={(mission, seed) => {
+              setActivePanel("chat");
+              setActiveSkill("cosmos-explore");
+              setExploreDiscuss({ mission, seed });
+              void refreshThrml(`${mission.prompt}\n\n${seed}`);
+            }}
             onSend={handleChatSend}
             onResetChat={newChat}
           />

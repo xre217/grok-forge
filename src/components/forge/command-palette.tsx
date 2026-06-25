@@ -19,6 +19,7 @@ import {
   MessageSquare,
   Rocket,
   Sparkles,
+  Telescope,
   Terminal,
   Upload,
 } from "lucide-react";
@@ -93,6 +94,12 @@ export function CommandPalette({
           >
             <BookOpen />
             View ledger
+          </CommandItem>
+          <CommandItem
+            onSelect={() => run(() => onPanelChange?.("explore"))}
+          >
+            <Telescope />
+            {locale === "zh" ? "探索宇宙" : "Explore cosmos"}
           </CommandItem>
           <CommandItem onSelect={() => run(() => onExport?.())}>
             <Download />
