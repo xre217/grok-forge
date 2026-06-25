@@ -14,6 +14,7 @@ import {
   buildBundleImportPreview,
   compareTeamBundles,
   fetchLedgerEntryMap,
+  mergeComparedTeamBundles,
   readTeamBundleFile,
   suggestCompareImportSide,
   type BundleCrewCompareRow,
@@ -25,8 +26,8 @@ import {
 } from "@/lib/team-bundle";
 import type { Locale, TeamBundle } from "@/types/forge";
 import { cn } from "@/lib/utils";
-import { ArrowLeftRight, FileJson, Loader2, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { ArrowLeftRight, FileJson, GitMerge, Loader2, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const COPY = {
   en: {
@@ -74,6 +75,10 @@ const COPY = {
     suggested: "Suggested",
     importHint: "Opens import preview vs your ledger before merge.",
     staging: "Preparing import…",
+    mergeBoth: "Merge both",
+    unionEntries: (n: number) =>
+      n === 1 ? "1 union entry" : `${n} union entries`,
+    claimConflictHint: "Claim conflicts use the newer export.",
   },
   zh: {
     title: "对比团队包",
@@ -119,6 +124,9 @@ const COPY = {
     suggested: "推荐",
     importHint: "将打开与账本的导入预览后再合并。",
     staging: "准备导入…",
+    mergeBoth: "合并两者",
+    unionEntries: (n: number) => `合并共 ${n} 条`,
+    claimConflictHint: "主张冲突时采用较新的导出。",
   },
 } as const;
 
@@ -128,7 +136,10 @@ type TeamBundleCompareDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   locale: Locale;
-  onImportPick?: (bundle: TeamBundle, side: "A" | "B") => void | Promise<void>;
+  onImportPick?: (
+    bundle: TeamBundle,
+    side: "A" | "B" | "merge",
+  ) => void | Promise<void>;
   stagingImport?: boolean;
 };
 
@@ -161,7 +172,15 @@ export function TeamBundleCompareDialog({
   const [error, setError] = useState<string | null>(null);
   const [previewA, setPreviewA] = useState<BundleImportPreview | null>(null);
   const [previewB, setPreviewB] = useState<BundleImportPreview | null>(null);
+  const [previewMerge, setPreviewMerge] = useState<BundleImportPreview | null>(
+    null,
+  );
   const [loadingPreviews, setLoadingPreviews] = useState(false);
+
+  const mergedBundle = useMemo(() => {
+    if (!bundleA || !bundleB) return null;
+    return mergeComparedTeamBundles(bundleA, bundleB);
+  }, [bundleA, bundleB]);
 
   useEffect(() => {
     if (!open) return;
@@ -176,6 +195,7 @@ export function TeamBundleCompareDialog({
       setCompare(null);
       setPreviewA(null);
       setPreviewB(null);
+      setPreviewMerge(null);
     }
   }, [bundleA, bundleB]);
 
@@ -190,11 +210,18 @@ export function TeamBundleCompareDialog({
         if (cancelled) return;
         setPreviewA(buildBundleImportPreview(bundleA, map));
         setPreviewB(buildBundleImportPreview(bundleB, map));
+        setPreviewMerge(
+          buildBundleImportPreview(
+            mergeComparedTeamBundles(bundleA, bundleB),
+            map,
+          ),
+        );
       })
       .catch(() => {
         if (!cancelled) {
           setPreviewA(null);
           setPreviewB(null);
+          setPreviewMerge(null);
         }
       })
       .finally(() => {
@@ -215,6 +242,7 @@ export function TeamBundleCompareDialog({
     setLoadingSide(null);
     setPreviewA(null);
     setPreviewB(null);
+    setPreviewMerge(null);
     setLoadingPreviews(false);
   };
 
@@ -223,9 +251,15 @@ export function TeamBundleCompareDialog({
       ? suggestCompareImportSide(compare, bundleA, bundleB, previewA, previewB)
       : null;
 
-  const handleImport = (side: "A" | "B") => {
+  const handleImport = (side: "A" | "B" | "merge") => {
+    if (!onImportPick) return;
+    if (side === "merge") {
+      if (!mergedBundle) return;
+      void onImportPick(mergedBundle, "merge");
+      return;
+    }
     const bundle = side === "A" ? bundleA : bundleB;
-    if (!bundle || !onImportPick) return;
+    if (!bundle) return;
     void onImportPick(bundle, side);
   };
 
@@ -336,6 +370,16 @@ export function TeamBundleCompareDialog({
               {compare.stats.claimChanged > 0 && (
                 <StatPill tone="amber">
                   {compare.stats.claimChanged} {t.claimChanged}
+                </StatPill>
+              )}
+              {mergedBundle && (
+                <StatPill tone="gold">
+                  {t.unionEntries(mergedBundle.stats.total)}
+                </StatPill>
+              )}
+              {!loadingPreviews && previewMerge && previewMerge.stats.new > 0 && (
+                <StatPill tone="sky">
+                  {t.importNew(previewMerge.stats.new)} (merged)
                 </StatPill>
               )}
             </div>
@@ -464,7 +508,11 @@ export function TeamBundleCompareDialog({
         <DialogFooter className="flex-col gap-2 border-white/5 bg-transparent sm:flex-row sm:justify-end">
           {compare && onImportPick && (
             <p className="w-full text-[10px] text-white/30 sm:mr-auto sm:w-auto">
-              {loadingPreviews ? t.staging : t.importHint}
+              {loadingPreviews
+                ? t.staging
+                : compare.stats.claimChanged > 0
+                  ? `${t.importHint} ${t.claimConflictHint}`
+                  : t.importHint}
             </p>
           )}
           <div className="flex w-full flex-wrap justify-end gap-2 sm:w-auto">
@@ -521,6 +569,28 @@ export function TeamBundleCompareDialog({
                     ·{" "}
                     {previewB.stats.new > 0
                       ? t.importNew(previewB.stats.new)
+                      : t.importNothingNew}
+                  </span>
+                )}
+              </Button>
+            )}
+            {compare && onImportPick && mergedBundle && (
+              <Button
+                disabled={stagingImport || loadingPreviews}
+                className="bg-[var(--forge-gold)] text-black hover:bg-[var(--forge-gold)]/90"
+                onClick={() => handleImport("merge")}
+              >
+                {stagingImport ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <GitMerge className="size-4" />
+                )}
+                {t.mergeBoth}
+                {!loadingPreviews && previewMerge && (
+                  <span className="ml-1 text-[10px] opacity-80">
+                    ·{" "}
+                    {previewMerge.stats.new > 0
+                      ? t.importNew(previewMerge.stats.new)
                       : t.importNothingNew}
                   </span>
                 )}
@@ -941,13 +1011,14 @@ function StatPill({
   tone,
 }: {
   children: React.ReactNode;
-  tone: "sky" | "muted" | "violet" | "amber";
+  tone: "sky" | "muted" | "violet" | "amber" | "gold";
 }) {
   const tones = {
     sky: "border-sky-400/25 bg-sky-500/10 text-sky-200/80",
     muted: "border-white/10 bg-white/5 text-white/45",
     violet: "border-violet-400/25 bg-violet-500/10 text-violet-200/80",
     amber: "border-amber-400/25 bg-amber-500/10 text-amber-200/80",
+    gold: "border-[var(--forge-gold)]/25 bg-[var(--forge-gold)]/10 text-[var(--forge-gold)]",
   };
 
   return (

@@ -239,6 +239,11 @@ Vercel deploy is optional — Forge is designed to run on your machine.
 
 ## Changelog
 
+### v0.19.0 — Merge both bundles
+- **Merge both** — compare dialog unions A ∪ B into one staged import (unique ids + merged crew log)
+- **Conflict rule** — same id, different claim/summary → newer export wins
+- **Union stats** — pill shows merged entry count and new vs ledger before preview
+
 ### v0.18.0 — Crew log export
 - **`grok-forge-crew-log` v1.0** — standalone JSON export/import for crew activity
 - **Crew log panel** — Export log / Import log; filtered view exports only matching events

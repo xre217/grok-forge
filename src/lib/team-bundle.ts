@@ -563,6 +563,129 @@ function compareBundleCrew(
   return { onlyInA, onlyInB, unchanged, summaryChanged };
 }
 
+function preferNewerBundle(a: TeamBundle, b: TeamBundle): "A" | "B" {
+  const dateA = new Date(a.exportedAt).getTime();
+  const dateB = new Date(b.exportedAt).getTime();
+  return dateB >= dateA ? "B" : "A";
+}
+
+function mergeBundleMemoryEntries(
+  a: TeamBundle,
+  b: TeamBundle,
+): TeamBundleEntry[] {
+  const newer = preferNewerBundle(a, b);
+  const mapA = new Map(a.memory.entries.map((e) => [e.id, e]));
+  const mapB = new Map(b.memory.entries.map((e) => [e.id, e]));
+  const merged: TeamBundleEntry[] = [];
+
+  for (const [id, entryA] of mapA) {
+    const entryB = mapB.get(id);
+    if (!entryB || entryA.claim.trim() === entryB.claim.trim()) {
+      merged.push(entryA);
+    } else {
+      merged.push(newer === "B" ? entryB : entryA);
+    }
+  }
+
+  for (const [id, entryB] of mapB) {
+    if (!mapA.has(id)) merged.push(entryB);
+  }
+
+  return merged;
+}
+
+function mergeBundleCrewEntries(
+  a: TeamBundle,
+  b: TeamBundle,
+): CrewActivity[] {
+  const newer = preferNewerBundle(a, b);
+  const mapA = new Map((a.crewLog?.entries ?? []).map((c) => [c.id, c]));
+  const mapB = new Map((b.crewLog?.entries ?? []).map((c) => [c.id, c]));
+  const merged: CrewActivity[] = [];
+  const seen = new Set<string>();
+
+  for (const [id, activityA] of mapA) {
+    const activityB = mapB.get(id);
+    if (!activityB || activityA.summary.trim() === activityB.summary.trim()) {
+      merged.push(activityA);
+    } else {
+      merged.push(newer === "B" ? activityB : activityA);
+    }
+    seen.add(id);
+  }
+
+  for (const [id, activityB] of mapB) {
+    if (!seen.has(id)) merged.push(activityB);
+  }
+
+  return merged;
+}
+
+function buildMergedBundleSummary(
+  bundle: Omit<TeamBundle, "summary">,
+  a: TeamBundle,
+  b: TeamBundle,
+): string {
+  const lines = [
+    `# ${FORGE.name} Team Bundle (merged compare)`,
+    ``,
+    `Merged: ${bundle.exportedAt}`,
+    `Sources: ${a.team.label} (${a.exportedAt}) + ${b.team.label} (${b.exportedAt})`,
+    `Team label: ${bundle.team.label}`,
+    `Entries: ${bundle.stats.total} (${bundle.stats.explorations} explorations, ${bundle.stats.pinned} pinned)`,
+    `Missions: ${bundle.missions.length}`,
+    `Crew log: ${bundle.crewLog?.entries.length ?? 0} events`,
+    `Claim conflicts: newer export wins`,
+    ``,
+    `## Missions`,
+    ...bundle.missions.map(
+      (m) =>
+        `### ${m.title} (${m.entryCount})\n${m.entries
+          .map((e) => `- ${e.claim}`)
+          .join("\n")}`,
+    ),
+  ];
+  return lines.join("\n");
+}
+
+/** Union two compared bundles — unique ids from both; claim conflicts → newer export */
+export function mergeComparedTeamBundles(
+  a: TeamBundle,
+  b: TeamBundle,
+): TeamBundle {
+  const memory = mergeBundleMemoryEntries(a, b);
+  const crewEntries = mergeBundleCrewEntries(a, b);
+  const missions = groupEntriesByMission(memory);
+  const explorations = memory.filter((e) => e.type === "exploration").length;
+  const pinned = memory.filter((e) => e.tags?.includes("pinned")).length;
+
+  const base = {
+    format: "grok-forge-team-bundle" as const,
+    version: "1.1" as const,
+    exportedAt: new Date().toISOString(),
+    forge: {
+      name: FORGE.name,
+      version: FORGE.version,
+      tagline: FORGE.tagline,
+    },
+    team: {
+      label: `${a.team.label} ∪ ${b.team.label}`,
+      locale: a.team.locale,
+    },
+    memory: { entries: memory },
+    missions,
+    stats: {
+      explorations,
+      pinned,
+      total: memory.length,
+      crewLog: crewEntries.length,
+    },
+    crewLog: crewEntries.length ? { entries: crewEntries } : undefined,
+  };
+
+  return { ...base, summary: buildMergedBundleSummary(base, a, b) };
+}
+
 /** Suggest which bundle to import after compare (ledger new count, uniqueness, recency) */
 export function suggestCompareImportSide(
   compare: TeamBundleCompare,

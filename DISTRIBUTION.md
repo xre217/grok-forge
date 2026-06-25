@@ -13,8 +13,8 @@ New users: **Use this template** → clone their copy.
 ## 2. Pin the release (1 min)
 
 1. **Releases** → **Draft a new release**
-2. Choose tag `v0.18.0` (or latest)
-3. Title: `v0.18.x — Crew log export & local studio`
+2. Choose tag `v0.19.0` (or latest)
+3. Title: `v0.19.x — Merge both bundles & local studio`
 4. Paste changelog from README
 5. Publish
 
