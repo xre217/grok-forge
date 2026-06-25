@@ -1,1 +1,0 @@
-{"id":"fixture-team-bundle-1","ts":"2026-06-25T12:00:00.000Z","type":"exploration","claim":"Forge verify fixture — crew memory import smoke test.","evidence":"Automated verify-forge.sh team bundle check.","confidence":0.9,"tags":["exploration","mission:cosmic-horizon","team","fixture","team-bundle"],"source":"grok-forge-fixture"}
