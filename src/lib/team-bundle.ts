@@ -218,16 +218,32 @@ export type BundleImportPreviewMission = {
   duplicateCount: number;
 };
 
+export type BundleDiffRow = {
+  id: string;
+  status: BundleEntryImportStatus;
+  incoming: TeamBundleEntry;
+  existing?: TeamBundleEntry;
+  claimChanged: boolean;
+};
+
+export type BundleImportDiff = {
+  additions: BundleDiffRow[];
+  duplicates: BundleDiffRow[];
+  invalid: BundleDiffRow[];
+};
+
 export type BundleImportPreview = {
   team: string;
   exportedAt: string;
   forgeVersion: string;
   missions: BundleImportPreviewMission[];
+  diff: BundleImportDiff;
   stats: {
     total: number;
     new: number;
     duplicate: number;
     invalid: number;
+    changed: number;
     explorations: number;
     pinned: number;
   };
@@ -237,23 +253,71 @@ function isImportableBundleEntry(entry: TeamBundleEntry): boolean {
   return Boolean(entry.id?.trim() && entry.claim?.trim() && entry.type?.trim());
 }
 
+function toPreviewLedgerEntry(
+  entry: Record<string, unknown>,
+): TeamBundleEntry | null {
+  if (
+    typeof entry.id !== "string" ||
+    typeof entry.ts !== "string" ||
+    typeof entry.type !== "string" ||
+    typeof entry.claim !== "string"
+  ) {
+    return null;
+  }
+  return toTeamBundleEntry(entry);
+}
+
+export function buildBundleDiffRow(
+  incoming: TeamBundleEntry,
+  existingById: Map<string, TeamBundleEntry>,
+): BundleDiffRow {
+  if (!isImportableBundleEntry(incoming)) {
+    return {
+      id: incoming.id || "invalid",
+      status: "invalid",
+      incoming,
+      claimChanged: false,
+    };
+  }
+
+  const existing = existingById.get(incoming.id);
+  if (!existing) {
+    return {
+      id: incoming.id,
+      status: "new",
+      incoming,
+      claimChanged: false,
+    };
+  }
+
+  return {
+    id: incoming.id,
+    status: "duplicate",
+    incoming,
+    existing,
+    claimChanged: existing.claim.trim() !== incoming.claim.trim(),
+  };
+}
+
 export function buildBundleImportPreview(
   bundle: TeamBundle,
-  existingIds: Iterable<string>,
+  existingById: Map<string, TeamBundleEntry>,
 ): BundleImportPreview {
-  const existing = new Set(existingIds);
-
   const annotate = (entry: TeamBundleEntry): BundleImportPreviewEntry => {
-    if (!isImportableBundleEntry(entry)) {
-      return { ...entry, status: "invalid" };
-    }
-    if (existing.has(entry.id)) {
-      return { ...entry, status: "duplicate" };
-    }
-    return { ...entry, status: "new" };
+    const row = buildBundleDiffRow(entry, existingById);
+    return { ...entry, status: row.status };
   };
 
-  const annotated = bundle.memory.entries.map(annotate);
+  const diffRows = bundle.memory.entries.map((entry) =>
+    buildBundleDiffRow(entry, existingById),
+  );
+
+  const diff: BundleImportDiff = {
+    additions: diffRows.filter((r) => r.status === "new"),
+    duplicates: diffRows.filter((r) => r.status === "duplicate"),
+    invalid: diffRows.filter((r) => r.status === "invalid"),
+  };
+
   const missions = groupEntriesByMission(bundle.memory.entries).map((mission) => {
     const entries = mission.entries.map(annotate);
     return {
@@ -267,39 +331,51 @@ export function buildBundleImportPreview(
     };
   });
 
-  const newCount = annotated.filter((e) => e.status === "new").length;
-  const duplicateCount = annotated.filter((e) => e.status === "duplicate").length;
-  const invalidCount = annotated.filter((e) => e.status === "invalid").length;
+  const newCount = diff.additions.length;
+  const duplicateCount = diff.duplicates.length;
+  const invalidCount = diff.invalid.length;
+  const changedCount = diff.duplicates.filter((r) => r.claimChanged).length;
 
   return {
     team: bundle.team.label,
     exportedAt: bundle.exportedAt,
     forgeVersion: bundle.forge.version,
     missions,
+    diff,
     stats: {
       total: bundle.stats.total,
       new: newCount,
       duplicate: duplicateCount,
       invalid: invalidCount,
+      changed: changedCount,
       explorations: bundle.stats.explorations,
       pinned: bundle.stats.pinned,
     },
   };
 }
 
-export async function fetchLedgerEntryIds(limit = 500): Promise<Set<string>> {
+export async function fetchLedgerEntryMap(
+  limit = 500,
+): Promise<Map<string, TeamBundleEntry>> {
   const res = await fetch(`/api/ledger?limit=${limit}`);
-  if (!res.ok) return new Set();
+  if (!res.ok) return new Map();
 
   const data = (await res.json()) as {
-    entries?: Array<{ id?: string }>;
+    entries?: Array<Record<string, unknown>>;
   };
 
-  const ids = new Set<string>();
-  for (const entry of data.entries ?? []) {
-    if (entry.id) ids.add(entry.id);
+  const map = new Map<string, TeamBundleEntry>();
+  for (const raw of data.entries ?? []) {
+    const entry = toPreviewLedgerEntry(raw);
+    if (entry) map.set(entry.id, entry);
   }
-  return ids;
+  return map;
+}
+
+/** @deprecated Use fetchLedgerEntryMap */
+export async function fetchLedgerEntryIds(limit = 500): Promise<Set<string>> {
+  const map = await fetchLedgerEntryMap(limit);
+  return new Set(map.keys());
 }
 
 /** Mission ids referenced in bundle — useful for import UI hints */

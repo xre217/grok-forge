@@ -6,7 +6,7 @@ import {
   buildBundleImportPreview,
   buildTeamBundle,
   downloadTeamBundle,
-  fetchLedgerEntryIds,
+  fetchLedgerEntryMap,
   readTeamBundleFile,
   type BundleImportPreview,
 } from "@/lib/team-bundle";
@@ -102,8 +102,8 @@ export function useTeamBundle(locale: Locale) {
     setError(null);
     try {
       const bundle = await readTeamBundleFile(file);
-      const existingIds = await fetchLedgerEntryIds();
-      const preview = buildBundleImportPreview(bundle, existingIds);
+      const existingById = await fetchLedgerEntryMap();
+      const preview = buildBundleImportPreview(bundle, existingById);
       setStagedImport({ bundle, preview });
       return { bundle, preview };
     } catch (err) {

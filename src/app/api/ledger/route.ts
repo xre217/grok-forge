@@ -13,7 +13,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const limit = Math.min(
     Number(searchParams.get("limit") ?? 12),
-    50,
+    500,
   );
 
   const entries = getRecentLedgerEntries(limit);

@@ -166,7 +166,7 @@ Best for **crew explorations** without sharing full chat history:
 
 1. **Explore panel** → **Export bundle** (or studio **Import** accepts bundles too)
 2. Send `grok-forge-team-bundle-*.json` to a teammate
-3. They **Import bundle** in Explore — preview missions and entries, then **Merge**
+3. They **Import bundle** in Explore — **Diff vs ledger** tab, then **Merge**
 4. Memory strip + chat injection pick up imported pins and explorations
 5. **Crew log** (studio header) records pins, explores, and bundle/session I/O
 
