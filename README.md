@@ -81,6 +81,7 @@ npm run verify
 | **Consciousness Stream** | Team exploration log from ledger |
 | **Team memory** | Ledger pins + explorations injected into every chat turn |
 | **Team bundles** | Export/import exploration + memory JSON for your crew |
+| **Import preview** | Review missions + new/duplicate entries before merging |
 | **Memory strip** | Live preview of active team memory above chat |
 | **First-run checklist** | Three-step onboarding to activate the memory loop |
 | **Memory citations** | Shows which ledger entries shaped each reply (chips + hover) |
@@ -240,6 +241,12 @@ FORGE_MODE=local npm run start
 Vercel deploy is optional — Forge is designed to run on your machine.
 
 ## Changelog
+
+### v0.10.0 — Bundle import preview
+- **Import preview modal** — see team, missions, and entries before merge
+- **New vs duplicate badges** — compares bundle IDs against your ledger
+- **Merge N entries** — confirm only imports new rows; duplicates skipped
+- Works from Explore panel and studio import (`⌘⇧I` / ⌘K)
 
 ### v0.9.0 — Memory citations
 - **Memory citations** — assistant replies show which ledger entries shaped the answer (type, tags, claim preview)

@@ -13,8 +13,8 @@ import { useForgeStatus } from "@/hooks/use-forge-status";
 import { useSessionExport } from "@/hooks/use-session-export";
 import { useSessionImport } from "@/hooks/use-session-import";
 import { useTeamBundle } from "@/hooks/use-team-bundle";
-import { readTeamBundleFile } from "@/lib/team-bundle";
-import { emitLedgerUpdated } from "@/lib/forge-events";
+import { TeamBundleImportPreviewDialog } from "@/components/forge/team-bundle-import-preview";
+import { validateTeamBundle } from "@/lib/team-bundle";
 import { useThrmlSignal } from "@/hooks/use-thrml-signal";
 import { FORGE, ROUTES } from "@/lib/constants";
 import { getClientForgePack } from "@/lib/forge-pack";
@@ -65,7 +65,14 @@ export function ForgeStudio() {
   });
 
   const { importSession, isImporting } = useSessionImport();
-  const { exportBundle } = useTeamBundle(locale);
+  const {
+    exportBundle,
+    stageImport,
+    confirmStagedImport,
+    cancelStagedImport,
+    stagedImport,
+    isImporting: isTeamBundleImporting,
+  } = useTeamBundle(locale);
 
   const skillPrompt = useMemo(() => {
     if (!activeSkill) return undefined;
@@ -140,33 +147,9 @@ export function ForgeStudio() {
           );
         }
 
-        if (
-          typeof parsed === "object" &&
-          parsed !== null &&
-          (parsed as { format?: string }).format === "grok-forge-team-bundle"
-        ) {
-          const bundle = await readTeamBundleFile(
-            new File([peek], file.name, { type: file.type }),
-          );
-          const res = await fetch("/api/team-bundle/import", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ bundle }),
-          });
-          const data = (await res.json()) as {
-            imported?: number;
-            skipped?: number;
-            error?: string;
-          };
-          if (!res.ok) {
-            throw new Error(data.error ?? "Team bundle import failed");
-          }
-          emitLedgerUpdated();
+        if (validateTeamBundle(parsed)) {
           setActivePanel("explore");
-          setToast({
-            title: locale === "zh" ? "团队包已导入" : "Team bundle imported",
-            detail: `${data.imported ?? 0} entries (${data.skipped ?? 0} skipped)`,
-          });
+          await stageImport(new File([peek], file.name, { type: file.type }));
           return;
         }
 
@@ -194,7 +177,7 @@ export function ForgeStudio() {
         });
       }
     },
-    [importSession, locale, refreshThrml, studioSkills],
+    [importSession, locale, refreshThrml, stageImport, studioSkills],
   );
 
   const handleChatSend = useCallback(
@@ -381,6 +364,32 @@ export function ForgeStudio() {
         detail={toast?.detail ?? null}
         locale={locale}
         onDismiss={() => setToast(null)}
+      />
+
+      <TeamBundleImportPreviewDialog
+        open={Boolean(stagedImport)}
+        preview={stagedImport?.preview ?? null}
+        locale={locale}
+        isImporting={isTeamBundleImporting}
+        onCancel={cancelStagedImport}
+        onConfirm={() =>
+          void confirmStagedImport()
+            .then((result) => {
+              if (!result) return;
+              setActivePanel("explore");
+              setToast({
+                title: locale === "zh" ? "团队包已导入" : "Team bundle imported",
+                detail: `${result.imported} imported, ${result.skipped} skipped`,
+              });
+            })
+            .catch((err) =>
+              setToast({
+                title: locale === "zh" ? "导入失败" : "Import failed",
+                detail:
+                  err instanceof Error ? err.message : "Team bundle import failed",
+              }),
+            )
+        }
       />
     </div>
   );

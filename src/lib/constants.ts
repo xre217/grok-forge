@@ -1,7 +1,7 @@
 export const FORGE = {
   name: "Grok Forge",
   tagline: "Your local AI studio — chat, remember, explore, export.",
-  version: "0.9.0",
+  version: "0.10.0",
   project: "Local AI Studio",
 } as const;
 
@@ -68,7 +68,7 @@ export const FORGE_FEATURES = [
     icon: "download" as const,
     title: "Team Bundles",
     description:
-      "Export crew memory JSON — explorations, pins, missions. Import merges into ledger.",
+      "Export crew memory JSON. Import preview shows new vs duplicate before merge.",
   },
   {
     icon: "keyboard" as const,

@@ -13,6 +13,7 @@ import type { ThrmlSignal } from "@/lib/thrml";
 import type { Locale } from "@/types/forge";
 import { cn } from "@/lib/utils";
 import { useTeamBundle } from "@/hooks/use-team-bundle";
+import { TeamBundleImportPreviewDialog } from "@/components/forge/team-bundle-import-preview";
 import { Download, Loader2, Rocket, Sparkles, Telescope, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 
@@ -73,7 +74,10 @@ export function ExplorePanel({
   const bundleInputRef = useRef<HTMLInputElement>(null);
   const {
     exportBundle,
-    importBundle,
+    stageImport,
+    confirmStagedImport,
+    cancelStagedImport,
+    stagedImport,
     isExporting: bundleExporting,
     isImporting: bundleImporting,
   } = useTeamBundle(locale);
@@ -202,15 +206,9 @@ export function ExplorePanel({
           onChange={(e) => {
             const file = e.target.files?.[0];
             if (!file) return;
-            void importBundle(file)
-              .then((r) => {
-                const detail = `${r.imported} imported, ${r.skipped} skipped`;
-                setBundleToast(`${t.bundleImported}: ${detail}`);
-                onBundleImported?.(detail);
-              })
-              .catch((err) =>
-                setError(err instanceof Error ? err.message : t.failed),
-              );
+            void stageImport(file).catch((err) =>
+              setError(err instanceof Error ? err.message : t.failed),
+            );
             e.target.value = "";
           }}
         />
@@ -311,6 +309,26 @@ export function ExplorePanel({
           )}
         </div>
       </div>
+
+      <TeamBundleImportPreviewDialog
+        open={Boolean(stagedImport)}
+        preview={stagedImport?.preview ?? null}
+        locale={locale}
+        isImporting={bundleImporting}
+        onCancel={cancelStagedImport}
+        onConfirm={() =>
+          void confirmStagedImport()
+            .then((r) => {
+              if (!r) return;
+              const detail = `${r.imported} imported, ${r.skipped} skipped`;
+              setBundleToast(`${t.bundleImported}: ${detail}`);
+              onBundleImported?.(detail);
+            })
+            .catch((err) =>
+              setError(err instanceof Error ? err.message : t.failed),
+            )
+        }
+      />
     </div>
   );
 }

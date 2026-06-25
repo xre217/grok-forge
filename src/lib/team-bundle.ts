@@ -202,6 +202,106 @@ export async function readTeamBundleFile(file: File): Promise<TeamBundle> {
   return bundle;
 }
 
+export type BundleEntryImportStatus = "new" | "duplicate" | "invalid";
+
+export type BundleImportPreviewEntry = TeamBundleEntry & {
+  status: BundleEntryImportStatus;
+};
+
+export type BundleImportPreviewMission = {
+  missionId: string;
+  title: string;
+  titleZh: string;
+  domain: string;
+  entries: BundleImportPreviewEntry[];
+  newCount: number;
+  duplicateCount: number;
+};
+
+export type BundleImportPreview = {
+  team: string;
+  exportedAt: string;
+  forgeVersion: string;
+  missions: BundleImportPreviewMission[];
+  stats: {
+    total: number;
+    new: number;
+    duplicate: number;
+    invalid: number;
+    explorations: number;
+    pinned: number;
+  };
+};
+
+function isImportableBundleEntry(entry: TeamBundleEntry): boolean {
+  return Boolean(entry.id?.trim() && entry.claim?.trim() && entry.type?.trim());
+}
+
+export function buildBundleImportPreview(
+  bundle: TeamBundle,
+  existingIds: Iterable<string>,
+): BundleImportPreview {
+  const existing = new Set(existingIds);
+
+  const annotate = (entry: TeamBundleEntry): BundleImportPreviewEntry => {
+    if (!isImportableBundleEntry(entry)) {
+      return { ...entry, status: "invalid" };
+    }
+    if (existing.has(entry.id)) {
+      return { ...entry, status: "duplicate" };
+    }
+    return { ...entry, status: "new" };
+  };
+
+  const annotated = bundle.memory.entries.map(annotate);
+  const missions = groupEntriesByMission(bundle.memory.entries).map((mission) => {
+    const entries = mission.entries.map(annotate);
+    return {
+      missionId: mission.missionId,
+      title: mission.title,
+      titleZh: mission.titleZh,
+      domain: mission.domain,
+      entries,
+      newCount: entries.filter((e) => e.status === "new").length,
+      duplicateCount: entries.filter((e) => e.status === "duplicate").length,
+    };
+  });
+
+  const newCount = annotated.filter((e) => e.status === "new").length;
+  const duplicateCount = annotated.filter((e) => e.status === "duplicate").length;
+  const invalidCount = annotated.filter((e) => e.status === "invalid").length;
+
+  return {
+    team: bundle.team.label,
+    exportedAt: bundle.exportedAt,
+    forgeVersion: bundle.forge.version,
+    missions,
+    stats: {
+      total: bundle.stats.total,
+      new: newCount,
+      duplicate: duplicateCount,
+      invalid: invalidCount,
+      explorations: bundle.stats.explorations,
+      pinned: bundle.stats.pinned,
+    },
+  };
+}
+
+export async function fetchLedgerEntryIds(limit = 500): Promise<Set<string>> {
+  const res = await fetch(`/api/ledger?limit=${limit}`);
+  if (!res.ok) return new Set();
+
+  const data = (await res.json()) as {
+    entries?: Array<{ id?: string }>;
+  };
+
+  const ids = new Set<string>();
+  for (const entry of data.entries ?? []) {
+    if (entry.id) ids.add(entry.id);
+  }
+  return ids;
+}
+
 /** Mission ids referenced in bundle — useful for import UI hints */
 export function listBundleMissionIds(bundle: TeamBundle): string[] {
   return [

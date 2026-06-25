@@ -2,11 +2,14 @@
 
 import { emitLedgerUpdated } from "@/lib/forge-events";
 import {
+  buildBundleImportPreview,
   buildTeamBundle,
   downloadTeamBundle,
+  fetchLedgerEntryIds,
   readTeamBundleFile,
+  type BundleImportPreview,
 } from "@/lib/team-bundle";
-import type { Locale } from "@/types/forge";
+import type { Locale, TeamBundle } from "@/types/forge";
 import { useCallback, useState } from "react";
 
 export type TeamBundleImportResult = {
@@ -17,10 +20,18 @@ export type TeamBundleImportResult = {
   exportedAt: string;
 };
 
+export type StagedTeamBundleImport = {
+  bundle: TeamBundle;
+  preview: BundleImportPreview;
+};
+
 export function useTeamBundle(locale: Locale) {
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [stagedImport, setStagedImport] = useState<StagedTeamBundleImport | null>(
+    null,
+  );
 
   const exportBundle = useCallback(async () => {
     setIsExporting(true);
@@ -46,11 +57,10 @@ export function useTeamBundle(locale: Locale) {
     }
   }, [locale]);
 
-  const importBundle = useCallback(async (file: File) => {
+  const commitImport = useCallback(async (bundle: TeamBundle) => {
     setIsImporting(true);
     setError(null);
     try {
-      const bundle = await readTeamBundleFile(file);
       const res = await fetch("/api/team-bundle/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -77,5 +87,46 @@ export function useTeamBundle(locale: Locale) {
     }
   }, []);
 
-  return { exportBundle, importBundle, isExporting, isImporting, error };
+  const stageImport = useCallback(async (file: File) => {
+    setError(null);
+    try {
+      const bundle = await readTeamBundleFile(file);
+      const existingIds = await fetchLedgerEntryIds();
+      const preview = buildBundleImportPreview(bundle, existingIds);
+      setStagedImport({ bundle, preview });
+      return { bundle, preview };
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Team bundle import failed";
+      setError(message);
+      throw err;
+    }
+  }, []);
+
+  const confirmStagedImport = useCallback(async () => {
+    if (!stagedImport) return null;
+    try {
+      const result = await commitImport(stagedImport.bundle);
+      setStagedImport(null);
+      return result;
+    } catch (err) {
+      throw err;
+    }
+  }, [commitImport, stagedImport]);
+
+  const cancelStagedImport = useCallback(() => {
+    if (isImporting) return;
+    setStagedImport(null);
+  }, [isImporting]);
+
+  return {
+    exportBundle,
+    stageImport,
+    confirmStagedImport,
+    cancelStagedImport,
+    stagedImport,
+    isExporting,
+    isImporting,
+    error,
+  };
 }
