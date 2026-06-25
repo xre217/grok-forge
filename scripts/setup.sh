@@ -29,7 +29,7 @@ fi
 
 if command -v ollama >/dev/null 2>&1; then
   MODEL="${OLLAMA_MODEL:-llama3.2:3b}"
-  echo "▸ Pulling Ollama model: ${MODEL}"
+  echo "▸ Pulling Ollama model: ${MODEL} (first run ~2 GB — may take a few minutes)"
   ollama pull "$MODEL" || echo "⚠ Ollama pull failed — run 'ollama serve' and try again"
 else
   echo "⚠ Ollama not found — install from https://ollama.com for local chat"
@@ -38,7 +38,11 @@ fi
 echo ""
 echo "✓ Setup complete"
 echo ""
-echo "  npm run dev:local    → dev server (http://localhost:3000)"
+echo "  npm run dev:local    → dev server (http://localhost:3000/studio)"
 echo "  npm run forge:local  → production-like on port 3847"
-echo "  Open studio:         http://localhost:3000/studio"
+echo "  npm run verify       → health-check routes (server must be running)"
+echo ""
+echo "  First run tips:"
+echo "  · Port 3000 busy?  PORT=3001 npm run dev:local"
+echo "  · Then verify:    npm run verify http://localhost:3001"
 echo ""

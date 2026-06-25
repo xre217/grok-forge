@@ -4,12 +4,13 @@
 
 Fork it, run it on your machine, own your sessions.
 
-## Quick start (5 minutes)
+## Quick start (5–10 minutes)
 
 ### Prerequisites
 
 - **Node.js 20+**
 - **[Ollama](https://ollama.com)** (for local chat)
+- **~2 GB disk** for the default model (`llama3.2:3b`) on first pull
 
 ### Setup
 
@@ -40,6 +41,24 @@ npm run forge:local
 ```
 
 Open the studio, pick a skill, start chatting. Your messages go to **Ollama on your machine** — not the cloud.
+
+### Verify it works
+
+With the dev server running:
+
+```bash
+npm run verify
+# custom port: npm run verify http://localhost:3001
+```
+
+### First-run notes
+
+| Situation | What to do |
+|-----------|------------|
+| **Model download slow** | First `ollama pull llama3.2:3b` is ~2 GB — normal on fresh install |
+| **Port 3000 in use** | `PORT=3001 npm run dev:local` then open `http://localhost:3001/studio` |
+| **Chat fails** | Ensure `ollama serve` is running and the model finished pulling |
+| **Fork test** | `git clone` → `bash scripts/setup.sh` → `npm run dev:local` → `npm run verify` |
 
 ## What you get
 
@@ -203,7 +222,7 @@ On GitHub: **Settings → General → Template repository** (enable), then other
 | `npm run vilo:preset` | Enable VILO pack in `.env.local` |
 | `npm run docker:up` | Docker Compose build + run |
 | `npm run docker:down` | Stop Docker stack |
-| `npm run verify` | Health-check all API routes + studio page |
+| `npm run verify` | Health-check all API routes + studio (`npm run verify http://localhost:3001`) |
 
 ## Deploy (self-hosted)
 
@@ -215,6 +234,10 @@ FORGE_MODE=local npm run start
 Vercel deploy is optional — Forge is designed to run on your machine.
 
 ## Changelog
+
+### v0.6.1 — Fork-test polish
+- **setup.sh** — first-run tips (model size, port conflict, `npm run verify`)
+- **README** — verify step, first-run troubleshooting table
 
 ### v0.6.0 — First-run memory
 - **Onboarding checklist** — chat → pin/explore → memory live (auto-dismisses when done)

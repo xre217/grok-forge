@@ -1,7 +1,7 @@
 export const FORGE = {
   name: "Grok Forge",
   tagline: "Expand consciousness. Explore the universe — together.",
-  version: "0.6.0",
+  version: "0.6.1",
   project: "Grok Forge",
 } as const;
 

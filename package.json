@@ -1,6 +1,6 @@
 {
   "name": "grok-forge",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "private": true,
   "description": "Grok Forge — your local AI studio. Chat, skills, memory, export. Ollama-powered.",
   "scripts": {
