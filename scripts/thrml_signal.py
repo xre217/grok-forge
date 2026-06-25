@@ -55,7 +55,9 @@ def _recommend(mode: str, urgency: float, uncertainty: float, exploration: float
 
 
 def _thrml_sample(prompt: str) -> dict[str, Any]:
-    repo_path = os.environ.get("THRML_REPO_PATH", "/Users/trefong/Projects/thrml")
+    repo_path = os.environ.get("THRML_REPO_PATH", "").strip()
+    if not repo_path:
+        raise ModuleNotFoundError("THRML_REPO_PATH not set")
     if repo_path not in sys.path:
         sys.path.insert(0, repo_path)
 

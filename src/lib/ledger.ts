@@ -68,5 +68,38 @@ export function getLedgerStats() {
     total: entries.length,
     sovereigntyTagged: sovereignty.length,
     newest: entries.at(-1)?.ts ?? null,
+    writable: isLedgerWritable(),
   };
+}
+
+export function isLedgerWritable() {
+  return process.env.FORGE_LEDGER_ENABLED !== "0";
+}
+
+export function appendLedgerEntry(
+  input: Pick<LedgerEntry, "type" | "claim"> &
+    Partial<Pick<LedgerEntry, "evidence" | "confidence" | "tags" | "source">>,
+): LedgerEntry {
+  if (!isLedgerWritable()) {
+    throw new Error("Ledger writes disabled (FORGE_LEDGER_ENABLED=0)");
+  }
+
+  const dir = path.dirname(LEDGER_FILE);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+
+  const entry: LedgerEntry = {
+    id: `forge-${Date.now()}`,
+    ts: new Date().toISOString(),
+    type: input.type,
+    claim: input.claim,
+    evidence: input.evidence,
+    confidence: input.confidence,
+    tags: input.tags ?? ["grok-forge"],
+    source: input.source ?? "grok-forge",
+  };
+
+  fs.appendFileSync(LEDGER_FILE, `${JSON.stringify(entry)}\n`, "utf8");
+  return entry;
 }

@@ -3,7 +3,7 @@
 import { MagneticNavRail } from "@/components/forge/magnetic-nav-rail";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { STUDIO_SKILLS } from "@/lib/constants";
+import type { StudioSkill } from "@/lib/skills";
 import type { StudioPanel } from "@/types/forge";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -11,6 +11,7 @@ import { Cpu, Wand2 } from "lucide-react";
 import { useMagneticTilt } from "@/hooks/use-magnetic-tilt";
 
 type SkillsRailProps = {
+  skills: StudioSkill[];
   activePanel: StudioPanel;
   onPanelChange: (panel: StudioPanel) => void;
   activeSkill: string | null;
@@ -56,6 +57,7 @@ function MagneticSkillCard({
 }
 
 export function SkillsRail({
+  skills,
   activePanel,
   onPanelChange,
   activeSkill,
@@ -87,7 +89,7 @@ export function SkillsRail({
 
       <ScrollArea className="flex-1">
         <div className="flex flex-col gap-2 pr-2">
-          {STUDIO_SKILLS.map((skill) => (
+          {skills.map((skill) => (
             <MagneticSkillCard
               key={skill.id}
               active={activeSkill === skill.id}

@@ -8,22 +8,42 @@ import { SkillsRail } from "@/components/forge/skills-rail";
 import { ThrmlSignalBar } from "@/components/forge/thrml-signal-bar";
 import { Button } from "@/components/ui/button";
 import { useSessionExport } from "@/hooks/use-session-export";
+import { useSessionImport } from "@/hooks/use-session-import";
 import { useThrmlSignal } from "@/hooks/use-thrml-signal";
-import { FORGE, ROUTES, STUDIO_SKILLS } from "@/lib/constants";
+import { FORGE, ROUTES } from "@/lib/constants";
+import { getClientForgePack } from "@/lib/forge-pack";
+import { getStudioSkills } from "@/lib/skills";
 import type { Locale, StudioPanel } from "@/types/forge";
 import confetti from "canvas-confetti";
-import { Download, Languages, Loader2, Plus } from "lucide-react";
+import { Download, Languages, Loader2, Plus, Upload } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+const DEFAULT_THRML_PROMPT = "Grok Forge studio session";
 
 export function ForgeStudio() {
   const [locale, setLocale] = useState<Locale>("en");
   const [activePanel, setActivePanel] = useState<StudioPanel>("chat");
   const [activeSkill, setActiveSkill] = useState<string | null>(null);
-  const [toastFile, setToastFile] = useState<string | null>(null);
+  const [toast, setToast] = useState<{
+    title: string;
+    detail: string;
+  } | null>(null);
+  const [chatReloadKey, setChatReloadKey] = useState(0);
+  const importInputRef = useRef<HTMLInputElement>(null);
 
-  const { signal: thrmlSignal, loading: thrmlLoading, refresh: refreshThrml } =
-    useThrmlSignal();
+  const studioSkills = useMemo(
+    () => getStudioSkills(getClientForgePack()),
+    [],
+  );
+
+  const {
+    signal: thrmlSignal,
+    loading: thrmlLoading,
+    error: thrmlError,
+    refresh: refreshThrml,
+    retry: retryThrml,
+  } = useThrmlSignal(DEFAULT_THRML_PROMPT);
 
   const { exportSession, isExporting } = useSessionExport({
     locale,
@@ -32,28 +52,35 @@ export function ForgeStudio() {
     thrml: thrmlSignal,
   });
 
+  const { importSession, isImporting } = useSessionImport();
+
   const skillPrompt = useMemo(() => {
     if (!activeSkill) return undefined;
-    const skill = STUDIO_SKILLS.find((s) => s.id === activeSkill);
+    const skill = studioSkills.find((s) => s.id === activeSkill);
     return skill?.prompt;
-  }, [activeSkill]);
+  }, [activeSkill, studioSkills]);
 
   useEffect(() => {
     if (skillPrompt) {
       void refreshThrml(skillPrompt);
+      return;
     }
+    void refreshThrml(DEFAULT_THRML_PROMPT);
   }, [skillPrompt, refreshThrml]);
 
   const newChat = () => {
     setActiveSkill(null);
     setActivePanel("chat");
-    void refreshThrml("Local Forge — new conversation");
+    void refreshThrml(DEFAULT_THRML_PROMPT);
   };
 
   const handleExport = useCallback(async () => {
     const filename = await exportSession();
     if (filename) {
-      setToastFile(filename);
+      setToast({
+        title: locale === "zh" ? "会话已导出" : "Session exported",
+        detail: filename,
+      });
       confetti({
         particleCount: 40,
         spread: 50,
@@ -61,7 +88,35 @@ export function ForgeStudio() {
         colors: ["#d4af37", "#b8860b", "#fff4b8"],
       });
     }
-  }, [exportSession]);
+  }, [exportSession, locale]);
+
+  const handleImportPick = useCallback(
+    async (file: File) => {
+      try {
+        const result = await importSession(file);
+        setLocale(result.locale);
+        setActiveSkill(result.activeSkill);
+        setActivePanel(result.activePanel);
+        setChatReloadKey((k) => k + 1);
+        void refreshThrml(
+          result.activeSkill
+            ? (studioSkills.find((s) => s.id === result.activeSkill)?.prompt ??
+                DEFAULT_THRML_PROMPT)
+            : DEFAULT_THRML_PROMPT,
+        );
+        setToast({
+          title: locale === "zh" ? "会话已导入" : "Session imported",
+          detail: `${result.messageCount} messages`,
+        });
+      } catch {
+        setToast({
+          title: locale === "zh" ? "导入失败" : "Import failed",
+          detail: locale === "zh" ? "检查 JSON 格式" : "Check JSON format",
+        });
+      }
+    },
+    [importSession, locale, refreshThrml, studioSkills],
+  );
 
   const handleChatSend = useCallback(
     (message: string) => {
@@ -76,6 +131,10 @@ export function ForgeStudio() {
         e.preventDefault();
         void handleExport();
       }
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "i") {
+        e.preventDefault();
+        importInputRef.current?.click();
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -87,6 +146,18 @@ export function ForgeStudio() {
         className="opacity-40"
         particleCount={60}
         magnetism={0.008}
+      />
+
+      <input
+        ref={importInputRef}
+        type="file"
+        accept="application/json,.json"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) void handleImportPick(file);
+          e.target.value = "";
+        }}
       />
 
       <header className="relative z-10 flex items-center justify-between border-b border-white/5 px-4 py-3 backdrop-blur-md">
@@ -111,6 +182,20 @@ export function ForgeStudio() {
           >
             <Languages className="size-4" />
             {locale === "en" ? "中文" : "EN"}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={isImporting}
+            className="border-white/10 bg-white/5 text-white/70"
+            onClick={() => importInputRef.current?.click()}
+          >
+            {isImporting ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Upload className="size-4" />
+            )}
+            {locale === "zh" ? "导入" : "Import"}
           </Button>
           <Button
             variant="outline"
@@ -145,10 +230,13 @@ export function ForgeStudio() {
         <ThrmlSignalBar
           signal={thrmlSignal}
           loading={thrmlLoading}
+          error={thrmlError}
+          onRetry={retryThrml}
           locale={locale}
         />
         <div className="flex min-h-0 flex-1 gap-4">
           <SkillsRail
+            skills={studioSkills}
             activePanel={activePanel}
             onPanelChange={setActivePanel}
             activeSkill={activeSkill}
@@ -160,7 +248,9 @@ export function ForgeStudio() {
             activePanel={activePanel}
             activeSkill={activeSkill}
             skillPrompt={skillPrompt}
+            chatReloadKey={chatReloadKey}
             onSend={handleChatSend}
+            onResetChat={newChat}
           />
         </div>
       </div>
@@ -172,13 +262,15 @@ export function ForgeStudio() {
           setLocale((l) => (l === "en" ? "zh" : "en"))
         }
         onExport={() => void handleExport()}
+        onImport={() => importInputRef.current?.click()}
         locale={locale}
       />
 
       <ExportToast
-        filename={toastFile}
+        title={toast?.title ?? null}
+        detail={toast?.detail ?? null}
         locale={locale}
-        onDismiss={() => setToastFile(null)}
+        onDismiss={() => setToast(null)}
       />
     </div>
   );

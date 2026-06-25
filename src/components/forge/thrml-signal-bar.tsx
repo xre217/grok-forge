@@ -4,11 +4,20 @@ import type { ThrmlSignal } from "@/lib/thrml";
 import type { Locale } from "@/types/forge";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Activity, Loader2, Zap } from "lucide-react";
+import {
+  Activity,
+  AlertCircle,
+  Info,
+  Loader2,
+  RotateCcw,
+  Zap,
+} from "lucide-react";
 
 type ThrmlSignalBarProps = {
   signal: ThrmlSignal | null;
   loading?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
   locale: Locale;
 };
 
@@ -40,11 +49,38 @@ const MODE_COLORS: Record<string, string> = {
   verify: "text-violet-300 border-violet-400/30 bg-violet-500/10",
 };
 
+const COPY = {
+  en: {
+    empty: "Send a message to generate the THRML signal…",
+    stale: "Showing last signal",
+    retry: "Retry",
+    engine: "Engine",
+    fallbackScores: "Hash-based placeholder scores",
+  },
+  zh: {
+    empty: "发送消息以生成 THRML 信号…",
+    stale: "显示上次信号",
+    retry: "重试",
+    engine: "引擎",
+    fallbackScores: "基于哈希的占位分数",
+  },
+} as const;
+
+function engineLabel(engine: string, usingThrml: boolean): string {
+  if (usingThrml) return "ising";
+  if (engine === "deterministic-fallback") return "fallback";
+  return engine;
+}
+
 export function ThrmlSignalBar({
   signal,
   loading,
+  error,
+  onRetry,
   locale,
 }: ThrmlSignalBarProps) {
+  const t = COPY[locale];
+
   return (
     <div className="forge-glass mb-4 rounded-2xl px-4 py-3">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
@@ -58,6 +94,9 @@ export function ThrmlSignalBar({
 
         {signal && (
           <div className="flex items-center gap-2">
+            {error && (
+              <span className="text-[10px] text-amber-200/55">{t.stale}</span>
+            )}
             <span
               className={cn(
                 "rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider",
@@ -66,17 +105,84 @@ export function ThrmlSignalBar({
             >
               {signal.mode}
             </span>
-            <span className="flex items-center gap-1 text-[10px] text-white/35">
+            <span
+              className={cn(
+                "flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium",
+                signal.using_thrml
+                  ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-300"
+                  : "border-amber-400/25 bg-amber-500/10 text-amber-200/85",
+              )}
+              title={
+                signal.using_thrml
+                  ? signal.engine
+                  : [signal.engine, signal.reason].filter(Boolean).join(" — ")
+              }
+            >
               <Zap className="size-3" />
-              {signal.using_thrml ? "ising" : "fallback"}
+              {engineLabel(signal.engine, signal.using_thrml)}
             </span>
           </div>
         )}
       </div>
 
+      {signal && !signal.using_thrml && (
+        <div
+          className={cn(
+            "mb-3 flex items-start gap-2 rounded-xl border border-amber-400/15 bg-amber-500/[0.07] px-3 py-2",
+            error && "opacity-60",
+          )}
+        >
+          <Info className="mt-0.5 size-3.5 shrink-0 text-amber-300/80" />
+          <div className="min-w-0 text-[10px] leading-relaxed text-amber-100/75">
+            <p>
+              <span className="font-medium text-amber-100/90">{t.engine}:</span>{" "}
+              <span className="font-mono">{signal.engine}</span>
+              <span className="text-amber-100/50"> · {t.fallbackScores}</span>
+            </p>
+            {signal.reason && (
+              <p
+                className="mt-1 truncate text-amber-100/60"
+                title={signal.reason}
+              >
+                {signal.reason}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {error && (
+        <div
+          role="alert"
+          aria-live="polite"
+          className="mb-3 flex items-start justify-between gap-3 rounded-xl border border-rose-400/20 bg-rose-500/10 px-3 py-2"
+        >
+          <div className="flex min-w-0 items-start gap-2">
+            <AlertCircle className="mt-0.5 size-3.5 shrink-0 text-rose-300" />
+            <p className="text-xs leading-relaxed text-rose-100/85">{error}</p>
+          </div>
+          {onRetry && (
+            <button
+              type="button"
+              onClick={onRetry}
+              disabled={loading}
+              className="flex shrink-0 items-center gap-1 rounded-lg border border-rose-300/20 px-2 py-1 text-[10px] font-medium text-rose-100/80 transition-colors hover:bg-rose-500/15 disabled:opacity-40"
+            >
+              <RotateCcw className="size-3" />
+              {t.retry}
+            </button>
+          )}
+        </div>
+      )}
+
       {signal ? (
         <>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div
+            className={cn(
+              "grid grid-cols-1 gap-3 sm:grid-cols-3",
+              error && "opacity-60",
+            )}
+          >
             {(Object.keys(SCORE_META) as Array<keyof typeof SCORE_META>).map(
               (key) => {
                 const meta = SCORE_META[key];
@@ -106,16 +212,17 @@ export function ThrmlSignalBar({
               },
             )}
           </div>
-          <p className="mt-3 line-clamp-2 text-xs leading-relaxed text-white/55">
+          <p
+            className={cn(
+              "mt-3 line-clamp-2 text-xs leading-relaxed text-white/55",
+              error && "opacity-60",
+            )}
+          >
             {signal.recommendation}
           </p>
         </>
-      ) : (
-        <p className="text-xs text-white/35">
-          {locale === "zh"
-            ? "发送消息以生成 THRML 信号…"
-            : "Send a message to generate the THRML signal…"}
-        </p>
+      ) : error ? null : (
+        <p className="text-xs text-white/35">{t.empty}</p>
       )}
     </div>
   );

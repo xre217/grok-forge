@@ -13,26 +13,38 @@ type StoredChat = {
   locale: Locale;
 };
 
-export function useForgeChat(locale: Locale, greeting: string) {
+function loadStoredMessages(): ChatMessage[] | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as StoredChat;
+    return parsed.messages?.length ? parsed.messages : null;
+  } catch {
+    return null;
+  }
+}
+
+export function useForgeChat(
+  locale: Locale,
+  greeting: string,
+  reloadKey = 0,
+) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     { id: "welcome", role: "assistant", content: greeting },
   ]);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as StoredChat;
-        if (parsed.messages?.length) {
-          setMessages(parsed.messages);
-        }
-      }
-    } catch {
-      // ignore corrupt storage
-    }
+    const stored = loadStoredMessages();
+    if (stored) setMessages(stored);
     setHydrated(true);
   }, []);
+
+  useEffect(() => {
+    if (reloadKey === 0) return;
+    const stored = loadStoredMessages();
+    if (stored) setMessages(stored);
+  }, [reloadKey]);
 
   useEffect(() => {
     if (!hydrated) return;

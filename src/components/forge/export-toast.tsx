@@ -5,21 +5,27 @@ import { Check, FileJson } from "lucide-react";
 import { useEffect } from "react";
 
 type ExportToastProps = {
-  filename: string | null;
+  title: string | null;
+  detail: string | null;
   locale: "en" | "zh";
   onDismiss: () => void;
 };
 
-export function ExportToast({ filename, locale, onDismiss }: ExportToastProps) {
+export function ExportToast({
+  title,
+  detail,
+  locale,
+  onDismiss,
+}: ExportToastProps) {
   useEffect(() => {
-    if (!filename) return;
+    if (!title) return;
     const timer = window.setTimeout(onDismiss, 3200);
     return () => window.clearTimeout(timer);
-  }, [filename, onDismiss]);
+  }, [title, onDismiss]);
 
   return (
     <AnimatePresence>
-      {filename && (
+      {title && (
         <motion.div
           initial={{ opacity: 0, y: 16, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -31,13 +37,13 @@ export function ExportToast({ filename, locale, onDismiss }: ExportToastProps) {
             <Check className="size-4" />
           </span>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-white">
-              {locale === "zh" ? "会话已导出" : "Session exported"}
-            </p>
-            <p className="mt-0.5 flex items-center gap-1 truncate font-mono text-[10px] text-[var(--forge-gold-dim)]">
-              <FileJson className="size-3 shrink-0" />
-              {filename}
-            </p>
+            <p className="text-sm font-medium text-white">{title}</p>
+            {detail && (
+              <p className="mt-0.5 flex items-center gap-1 truncate font-mono text-[10px] text-[var(--forge-gold-dim)]">
+                <FileJson className="size-3 shrink-0" />
+                {detail}
+              </p>
+            )}
           </div>
         </motion.div>
       )}

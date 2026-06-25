@@ -19,7 +19,7 @@ const COPY = {
     run: "Production-like local server",
     stack: "Your stack",
     export: "Session export",
-    exportHint: "Chat + 24 ledger entries + runtime → JSON. ⌘⇧E",
+    exportHint: "Export ⌘⇧E · Import ⌘⇧I — chat + ledger slice + runtime JSON",
   },
   zh: {
     title: "本地熔炉",
@@ -27,7 +27,7 @@ const COPY = {
     run: "本地生产级服务器",
     stack: "你的技术栈",
     export: "会话导出",
-    exportHint: "对话 + 24 条账本 + 运行时 → JSON。⌘⇧E",
+    exportHint: "导出 ⌘⇧E · 导入 ⌘⇧I — 对话 + 账本切片 + 运行时 JSON",
   },
 } as const;
 

@@ -1,4 +1,5 @@
 import { FORGE } from "@/lib/constants";
+import { getForgeConfig } from "@/lib/forge-config";
 import { getLedgerStats } from "@/lib/ledger";
 import { getForgeMode, isLocalFirst } from "@/lib/local-mode";
 import {
@@ -11,6 +12,7 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 
 export async function GET() {
+  const config = getForgeConfig();
   const mode = getForgeMode();
   const local = isLocalFirst();
   const ollama = await isOllamaAvailable();
@@ -20,6 +22,8 @@ export async function GET() {
   return NextResponse.json({
     service: FORGE.name,
     version: FORGE.version,
+    project: config.project,
+    pack: config.pack,
     mode,
     localFirst: local,
     reasoner: local

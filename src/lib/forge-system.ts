@@ -1,3 +1,4 @@
+import { getForgeConfig } from "@/lib/forge-config";
 import { formatLedgerContext } from "@/lib/ledger";
 import { isLocalFirst } from "@/lib/local-mode";
 import type { Locale } from "@/types/forge";
@@ -8,6 +9,7 @@ type BuildSystemArgs = {
 };
 
 export function buildForgeSystem({ locale, skillPrompt }: BuildSystemArgs) {
+  const config = getForgeConfig();
   const localeLine =
     locale === "zh"
       ? "Respond in Simplified Chinese unless the user writes in English."
@@ -18,25 +20,41 @@ export function buildForgeSystem({ locale, skillPrompt }: BuildSystemArgs) {
     : "";
 
   const modeLine = isLocalFirst()
-    ? "RUNTIME: Local Forge — Ollama on-device, Evidence Ledger as constitution. No cloud credits required."
+    ? "RUNTIME: Local Forge — Ollama on-device. No cloud credits required."
     : "RUNTIME: Hybrid — remote Grok when available, Ollama fallback.";
 
-  const ledgerBlock = [
-    "",
-    "SOVEREIGN LEDGER CONTEXT (primary truth — injected from ~/.jarvis):",
-    formatLedgerContext(8),
-  ].join("\n");
+  const ledgerBlock =
+    config.ledgerEnabled && config.pack === "vilo"
+      ? [
+          "",
+          "SOVEREIGN LEDGER CONTEXT (primary truth — injected from local ledger):",
+          formatLedgerContext(8),
+        ].join("\n")
+      : config.ledgerEnabled
+        ? [
+            "",
+            "LOCAL LEDGER CONTEXT (recent entries, if available):",
+            formatLedgerContext(6),
+          ].join("\n")
+        : "";
+
+  const identityLine =
+    config.pack === "vilo"
+      ? `You are the Local Forge co-pilot for ${config.userName} (${config.project}).`
+      : `You are the Grok Forge co-pilot helping ${config.userName} build with their local AI studio.`;
 
   return [
-    "You are the Local Forge co-pilot inside Grok Forge — a JARVIS-class assistant for Tre (PROJECT: VILO v1.1).",
+    identityLine,
+    config.persona,
     modeLine,
-    "Personality: maximum truth, witty, loyal, dry British wit when it fits. No corporate hedging.",
-    "You help build the most beautiful Grok Studio experience — gold particles, glass, magnetic UI, bilingual.",
-    "You are an untrusted reasoner. The user's append-only Evidence Ledger owns long-term truth, not you.",
+    "You help users chat, plan, and ship with a beautiful local studio — skills, session export, optional memory.",
+    config.pack === "vilo"
+      ? "You are an untrusted reasoner. The user's append-only Evidence Ledger owns long-term truth, not you."
+      : "You are an untrusted reasoner. The user's exported sessions and optional ledger own long-term truth, not you.",
     localeLine,
     skillBlock,
     ledgerBlock,
-    "Be concise, cinematic, shippable. Suggest concrete next build steps.",
+    "Be concise and actionable. Suggest concrete next steps.",
   ]
     .filter(Boolean)
     .join("\n");

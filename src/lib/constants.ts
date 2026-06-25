@@ -1,8 +1,8 @@
 export const FORGE = {
   name: "Grok Forge",
-  tagline: "The Arc Reactor of Grok Studio",
+  tagline: "Your local AI studio — chat, skills, memory, export.",
   version: "0.1.0",
-  project: "VILO v1.1",
+  project: "Grok Forge",
 } as const;
 
 export const ROUTES = {
@@ -10,7 +10,9 @@ export const ROUTES = {
   studio: "/studio",
 } as const;
 
-export const FORGE_DOMAIN = "forge.trefong.com";
+export const FORGE_GITHUB_URL =
+  process.env.NEXT_PUBLIC_FORGE_GITHUB_URL?.trim() ||
+  "https://github.com/xre217/grok-forge";
 
 export const FORGE_FEATURES = [
   {
@@ -23,7 +25,7 @@ export const FORGE_FEATURES = [
     icon: "zap" as const,
     title: "Arc Reactor Canvas",
     description:
-      "Gold particle field with bloom and magnetism — the signature Tre heartbeat.",
+      "Gold particle field with bloom and magnetism — the signature Forge heartbeat.",
   },
   {
     icon: "keyboard" as const,
@@ -40,45 +42,9 @@ export const FORGE_FEATURES = [
     icon: "zap" as const,
     title: "Local-First",
     description:
-      "Ollama on your machine. VILO ledger as constitution. Build without cloud bills.",
+      "Ollama on your machine. Optional ledger memory. Build without cloud bills.",
   },
 ] as const;
 
-export const STUDIO_SKILLS = [
-  {
-    id: "grok-build",
-    title: "Grok Build",
-    titleZh: "Grok 构建",
-    desc: "Ship features with agentic Plan → Code → Test loops.",
-    descZh: "智能体循环：计划 → 编码 → 测试。",
-    prompt: "You are in Grok Build mode. Plan, code, test, refine. Ship complete features.",
-    tags: ["build", "agent"],
-  },
-  {
-    id: "vilo-sovereignty",
-    title: "VILO Sovereignty",
-    titleZh: "VILO 主权",
-    desc: "Ledger-first reasoning. Anti-nationalization posture.",
-    descZh: "账本优先推理。反国有化姿态。",
-    prompt: "Ledger is constitution. Remote model reasons only. Record high-signal claims.",
-    tags: ["ledger", "vilo"],
-  },
-  {
-    id: "design-forge",
-    title: "Design Forge",
-    titleZh: "设计熔炉",
-    desc: "Gold particles, glass, magnetic buttons — Tre signature UI.",
-    descZh: "金粒子、玻璃态、磁吸按钮——Tre 签名风格。",
-    prompt: "Apply Tre design system: gold canvas, glassmorphism, magnetic interactions.",
-    tags: ["ui", "design"],
-  },
-  {
-    id: "deploy-pulse",
-    title: "Deploy Pulse",
-    titleZh: "部署脉冲",
-    desc: "Vercel production deploy, env vars, health checks.",
-    descZh: "Vercel 生产部署、环境变量、健康检查。",
-    prompt: "Prepare production deploy: build, env, Vercel, GitHub remote.",
-    tags: ["vercel", "deploy"],
-  },
-] as const;
+// Re-export for backwards compatibility — prefer getStudioSkills() from @/lib/skills
+export { BASE_SKILLS as STUDIO_SKILLS, getStudioSkills } from "@/lib/skills";

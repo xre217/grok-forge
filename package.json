@@ -9,6 +9,7 @@
     "build": "next build",
     "start": "next start",
     "forge:local": "bash scripts/run-local.sh",
+    "setup": "bash scripts/setup.sh",
     "lint": "eslint"
   },
   "dependencies": {

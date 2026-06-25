@@ -20,6 +20,7 @@ import {
   Rocket,
   Sparkles,
   Terminal,
+  Upload,
 } from "lucide-react";
 import type { Locale } from "@/types/forge";
 import { useRouter } from "next/navigation";
@@ -31,6 +32,7 @@ type CommandPaletteProps = {
   onNewChat?: () => void;
   onToggleLocale?: () => void;
   onExport?: () => void;
+  onImport?: () => void;
   locale?: Locale;
 };
 
@@ -39,6 +41,7 @@ export function CommandPalette({
   onNewChat,
   onToggleLocale,
   onExport,
+  onImport,
   locale = "en",
 }: CommandPaletteProps) {
   const [open, setOpen] = useState(false);
@@ -95,6 +98,11 @@ export function CommandPalette({
             <Download />
             {locale === "zh" ? "导出会话" : "Export session"}
             <CommandShortcut>⌘⇧E</CommandShortcut>
+          </CommandItem>
+          <CommandItem onSelect={() => run(() => onImport?.())}>
+            <Upload />
+            {locale === "zh" ? "导入会话" : "Import session"}
+            <CommandShortcut>⌘⇧I</CommandShortcut>
           </CommandItem>
         </CommandGroup>
         <CommandSeparator />

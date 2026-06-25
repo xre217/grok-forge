@@ -22,6 +22,7 @@ type ChatPanelProps = {
   activePanel: StudioPanel;
   activeSkill: string | null;
   skillPrompt?: string;
+  chatReloadKey?: number;
   onSend?: (message: string) => void;
   onResetChat?: () => void;
 };
@@ -64,6 +65,7 @@ export function ChatPanel({
   activePanel,
   activeSkill,
   skillPrompt,
+  chatReloadKey = 0,
   onSend,
   onResetChat,
 }: ChatPanelProps) {
@@ -71,7 +73,11 @@ export function ChatPanel({
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<ForgeStatus | null>(null);
-  const { messages, setMessages } = useForgeChat(locale, t.greeting);
+  const { messages, setMessages, resetChat } = useForgeChat(
+    locale,
+    t.greeting,
+    chatReloadKey,
+  );
   const bottomRef = useRef<HTMLDivElement>(null);
   const lastSkillRef = useRef<string | null>(null);
 
@@ -198,7 +204,10 @@ export function ChatPanel({
           {onResetChat && (
             <button
               type="button"
-              onClick={onResetChat}
+              onClick={() => {
+                resetChat(t.greeting);
+                onResetChat();
+              }}
               className="text-[10px] text-white/30 hover:text-white/60"
             >
               {locale === "zh" ? "清除" : "clear"}

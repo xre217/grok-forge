@@ -68,8 +68,9 @@ async function thrmlFromPython(prompt: string): Promise<ThrmlSignal | null> {
     const child = spawn(python, [scriptPath], {
       env: {
         ...process.env,
-        THRML_REPO_PATH:
-          process.env.THRML_REPO_PATH ?? "/Users/trefong/Projects/thrml",
+        ...(process.env.THRML_REPO_PATH?.trim()
+          ? { THRML_REPO_PATH: process.env.THRML_REPO_PATH.trim() }
+          : {}),
       },
       stdio: ["pipe", "pipe", "pipe"],
     });

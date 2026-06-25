@@ -13,10 +13,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Grok Forge — The Arc Reactor of Grok Studio",
+  title: "Grok Forge — Your Local AI Studio",
   description:
-    "The most beautiful and powerful Grok Studio experience on the internet. Built by VILO.",
-  keywords: ["Grok", "Grok Studio", "Grok Forge", "VILO", "JARVIS", "AI"],
+    "Run your own local AI studio — chat, skills, session export, optional ledger memory. Ollama-powered, forkable, zero cloud bill.",
+  keywords: ["Grok", "Grok Studio", "Grok Forge", "Ollama", "local AI", "AI studio"],
 };
 
 export default function RootLayout({

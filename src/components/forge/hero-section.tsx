@@ -2,7 +2,7 @@
 
 import { FeatureCards } from "@/components/forge/feature-cards";
 import { MagneticButton } from "@/components/forge/magnetic-button";
-import { FORGE, ROUTES } from "@/lib/constants";
+import { FORGE, FORGE_GITHUB_URL, ROUTES } from "@/lib/constants";
 import confetti from "canvas-confetti";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -28,7 +28,7 @@ export function HeroSection() {
         </h1>
         <p className="mb-2 text-lg text-white/60">{FORGE.tagline}</p>
         <p className="mb-8 text-sm text-emerald-400/80">
-          Local Forge — Ollama + Ledger. No xAI credits. No Vercel.
+          Local-first — Ollama on your machine. Optional memory. No cloud bill required.
         </p>
         <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
           <MagneticButton asChild strength={0.38}>
@@ -43,7 +43,7 @@ export function HeroSection() {
           </MagneticButton>
           <MagneticButton asChild strength={0.22}>
             <a
-              href="https://github.com/xre217/grok-forge"
+              href={FORGE_GITHUB_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex h-11 items-center justify-center rounded-full border border-white/15 bg-white/5 px-8 text-sm font-medium text-white transition-colors hover:bg-white/10"
